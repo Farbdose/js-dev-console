@@ -1,0 +1,141 @@
+{
+  "components": [
+    {
+      "tag": "js-console",
+      "dependencies": [
+        "object-gui"
+      ],
+      "componentClass": "JsConsole",
+      "componentPath": "components/js-console/js-console.js",
+      "styles": {
+        "$": {
+          "stylePaths": [
+            "components/js-console/js-console.scss"
+          ]
+        }
+      },
+      "props": [
+        {
+          "name": "first",
+          "type": "String",
+          "attr": "first"
+        },
+        {
+          "name": "last",
+          "type": "String",
+          "attr": "last"
+        }
+      ],
+      "states": [
+        {
+          "name": "historyIndex"
+        },
+        {
+          "name": "input"
+        },
+        {
+          "name": "inputs"
+        },
+        {
+          "name": "outputs"
+        },
+        {
+          "name": "rows"
+        },
+        {
+          "name": "test"
+        }
+      ],
+      "hostElement": {
+        "name": "el"
+      },
+      "shadow": true
+    },
+    {
+      "tag": "object-gui",
+      "dependencies": [],
+      "componentClass": "ObjectGui",
+      "componentPath": "components/object-gui/object-gui.js",
+      "styles": {
+        "$": {
+          "stylePaths": [
+            "components/object-gui/object-gui.scss"
+          ]
+        }
+      },
+      "props": [
+        {
+          "name": "excludeProto",
+          "type": "Any",
+          "attr": "exclude-proto"
+        },
+        {
+          "name": "index",
+          "type": "Number",
+          "attr": "index",
+          "watch": [
+            "keyHandler"
+          ]
+        },
+        {
+          "name": "isLast",
+          "type": "Boolean",
+          "attr": "is-last"
+        },
+        {
+          "name": "obj",
+          "type": "Any",
+          "attr": "obj",
+          "watch": [
+            "objHandler"
+          ]
+        },
+        {
+          "name": "parent",
+          "type": "Any",
+          "attr": "parent"
+        },
+        {
+          "name": "tick",
+          "type": "Boolean",
+          "attr": "tick",
+          "watch": [
+            "tickHandler"
+          ]
+        }
+      ],
+      "states": [
+        {
+          "name": "expanded"
+        },
+        {
+          "name": "highlight"
+        },
+        {
+          "name": "inViewPort"
+        },
+        {
+          "name": "propCache"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "getPropCache"
+        }
+      ],
+      "hostElement": {
+        "name": "el"
+      }
+    }
+  ],
+  "collections": [],
+  "compiler": {
+    "name": "@stencil/core",
+    "version": "0.8.0",
+    "typescriptVersion": "2.8.3"
+  },
+  "bundles": []
+}
