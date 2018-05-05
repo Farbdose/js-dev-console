@@ -2,8 +2,7 @@
   width: 100%;
   position: absolute;
   font-family: Consolas, monospace;
-  font-size: 11px;
-  overflow: hidden; }
+  font-size: 11px; }
   :host .url {
     position: absolute;
     right: 0;
