@@ -43,6 +43,9 @@
           "name": "rows"
         },
         {
+          "name": "showHistory"
+        },
+        {
           "name": "test"
         }
       ],

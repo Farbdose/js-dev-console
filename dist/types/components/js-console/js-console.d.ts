@@ -1,8 +1,31 @@
 import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
 export declare class JsConsole {
     url: string;
     first: string;
     last: string;
+    showHistory: boolean;
     test: any;
     el: HTMLElement;
     inputs: Array<string>;
@@ -36,5 +59,7 @@ export declare class JsConsole {
     handleInputChange(event: any): void;
     getAutoCompleteOptions(command: string): any[];
     handleHistoryClick(i: any): void;
+    handlePromptClick(): void;
+    clear(): void;
     render(): JSX.Element;
 }

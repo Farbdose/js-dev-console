@@ -13,6 +13,7 @@ export class JsConsole {
 	@Prop() first: string;
 	@Prop() last: string;
 
+	@State() showHistory: boolean = false;
 	@State() test: any = {
 		a: NaN,
 		b: undefined,
@@ -157,13 +158,7 @@ export class JsConsole {
 		let tArea = this.elements.textArea;
 
 		if (event.key === 'Escape') {
-			this.input = "";
-
-			if (this.outputs.length == 0) {
-				this.inputs = [];
-			}
-
-			this.outputs = [];
+			this.clear();
 		} else if (event.key === 'ArrowUp') {
 			setTimeout(() => {
 				if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
@@ -229,7 +224,10 @@ export class JsConsole {
 
 				this.input = "";
 				setTimeout(() => {
-					this.elements.history.firstElementChild.lastElementChild.scrollIntoView(false);
+					let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
+					if (lastHistChild) {
+						lastHistChild.scrollIntoView(false);
+					}
 					this.elements.scrollMarker.scrollIntoView(false);
 				}, 100);
 			}
@@ -279,7 +277,7 @@ export class JsConsole {
 		try {
 			res = props(function () {
 				return eval.apply(this, [base]);
-			}(), false);
+			}(), true);
 		} catch (_) {
 		}
 
@@ -309,6 +307,20 @@ export class JsConsole {
 		this.input = this.inputs[i];
 		this.historyIndex = 0;
 		this.elements.textArea.focus();
+	}
+
+	handlePromptClick() {
+		this.showHistory = !this.showHistory;
+	}
+
+	clear() {
+		this.input = "";
+
+		if (this.outputs.length == 0) {
+			this.inputs = [];
+		}
+
+		this.outputs = [];
 	}
 
 	render() {
@@ -364,19 +376,20 @@ export class JsConsole {
 				</div>
 				<div class="bottom-wrapper">
 					<div class="history">
-						<div class="popup">{
+						<div class={{"popup": true, "open": this.showHistory}}>{
 							this.inputs.slice(0, -1).map((entry, i) => {
 								return (<span onClick={(_) => this.handleHistoryClick(i)}>{entry}</span>);
 							})
 						}</div>
 					</div>
-					<span class="prompt">&gt;</span>
+					<span class={{"prompt": true, "open": this.showHistory}} onClick={(_) => this.handlePromptClick()}>&gt;</span>
 					<input
 						list="completionOptions"
 						id="input-area"
 						class="input-area"
 						spellCheck={false}
 						value={this.input}
+						onChange={(event) => this.handleInputChange(event)}
 						onKeyDown={(event) => this.handleInputChange(event)}>
 					</input>
 					<datalist id="completionOptions">
@@ -384,6 +397,7 @@ export class JsConsole {
 							return (<option value={entry}></option>);
 						})}
 					</datalist>
+					<span class="clear" onClick={(_) => this.clear()}><span>x</span></span>
 				</div>
 				<div class="scroll-marker"></div>
 			</div>

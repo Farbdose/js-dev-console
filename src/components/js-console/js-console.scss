@@ -3,6 +3,7 @@
 	position: absolute;
 	font-family: Consolas, monospace;
 	font-size: 11px;
+	overflow: hidden;
 
 	.url {
 		position: absolute;
@@ -98,9 +99,23 @@
 		border-top: 1px solid lightgrey;
 		height: calc(1rem + 5px);
 
-		&:not(:focus-within) {
-			.history .popup {
-				opacity: 0;
+		.clear {
+			cursor: pointer;
+			display: inline-block;
+			background-color: lightgrey;
+			border-radius: 10px;
+			width: 16px;
+			height: 16px;
+			position: relative;
+			margin-top: 2px;
+
+			span {
+				width: 7px;
+				text-align: center;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -54%);
 			}
 		}
 
@@ -117,7 +132,7 @@
 			position: absolute;
 
 			.popup {
-				transition: opacity 0.2s;
+				transition: opacity 0.15s;
 				position: absolute;
 				bottom: 0;
 				background-color: rgba(255, 255, 255, 0.5);
@@ -129,6 +144,11 @@
 				min-height: 15px;
 				max-height: 50px;
 				overflow-y: auto;
+				opacity: 0;
+
+				&.open {
+					opacity: 1;
+				}
 
 				span {
 					white-space: nowrap;
@@ -148,14 +168,11 @@
 		}
 
 		.input-area {
-			box-sizing: content-box;
-			left: 0;
-			right: 0;
-			margin-bottom: 1px;
 			border: none;
-			width: calc(100% - 24px);
+			width: calc(100% - 24px - 20px);
 			resize: none;
 			padding: 2px;
+			transform: translateY(-2px);
 
 			&:focus {
 				outline: none !important;
@@ -163,6 +180,8 @@
 		}
 
 		.prompt {
+			cursor: pointer;
+			transition: all 0.15s ;
 			transform: scaleX(0.5);
 			float: left;
 			color: blue;
@@ -170,6 +189,10 @@
 			margin: -1px 4px -1px 4px;
 			font-family: Consolas, monospace;
 			font-weight: 800;
+
+			&.open {
+				transform: scaleY(0.5) rotateZ(-90deg);
+			}
 		}
 	}
 

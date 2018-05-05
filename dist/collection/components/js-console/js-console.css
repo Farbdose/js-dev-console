@@ -2,7 +2,8 @@
   width: 100%;
   position: absolute;
   font-family: Consolas, monospace;
-  font-size: 11px; }
+  font-size: 11px;
+  overflow: hidden; }
   :host .url {
     position: absolute;
     right: 0;
@@ -61,8 +62,22 @@
     margin-top: -1px;
     border-top: 1px solid lightgrey;
     height: calc(1rem + 5px); }
-    :host .bottom-wrapper:not(:focus-within) .history .popup {
-      opacity: 0; }
+    :host .bottom-wrapper .clear {
+      cursor: pointer;
+      display: inline-block;
+      background-color: lightgrey;
+      border-radius: 10px;
+      width: 16px;
+      height: 16px;
+      position: relative;
+      margin-top: 2px; }
+      :host .bottom-wrapper .clear span {
+        width: 7px;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -54%); }
     :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {
       font-size: 1rem;
       line-height: 1rem;
@@ -73,7 +88,7 @@
       overflow: visible;
       position: absolute; }
       :host .bottom-wrapper .history .popup {
-        transition: opacity 0.2s;
+        transition: opacity 0.15s;
         position: absolute;
         bottom: 0;
         background-color: rgba(255, 255, 255, 0.5);
@@ -84,7 +99,10 @@
         min-width: 120px;
         min-height: 15px;
         max-height: 50px;
-        overflow-y: auto; }
+        overflow-y: auto;
+        opacity: 0; }
+        :host .bottom-wrapper .history .popup.open {
+          opacity: 1; }
         :host .bottom-wrapper .history .popup span {
           white-space: nowrap;
           display: block;
@@ -97,17 +115,16 @@
             background-color: rgba(0, 0, 255, 0.5);
             color: white; }
     :host .bottom-wrapper .input-area {
-      box-sizing: content-box;
-      left: 0;
-      right: 0;
-      margin-bottom: 1px;
       border: none;
-      width: calc(100% - 24px);
+      width: calc(100% - 24px - 20px);
       resize: none;
-      padding: 2px; }
+      padding: 2px;
+      transform: translateY(-2px); }
       :host .bottom-wrapper .input-area:focus {
         outline: none !important; }
     :host .bottom-wrapper .prompt {
+      cursor: pointer;
+      transition: all 0.15s;
       transform: scaleX(0.5);
       float: left;
       color: blue;
@@ -115,3 +132,5 @@
       margin: -1px 4px -1px 4px;
       font-family: Consolas, monospace;
       font-weight: 800; }
+      :host .bottom-wrapper .prompt.open {
+        transform: scaleY(0.5) rotateZ(-90deg); }

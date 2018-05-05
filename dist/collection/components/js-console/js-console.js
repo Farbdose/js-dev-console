@@ -2,6 +2,7 @@ import { props } from "../utils";
 export class JsConsole {
     constructor() {
         this.url = "https://github.com/Farbdose/js-dev-console";
+        this.showHistory = false;
         this.test = {
             a: NaN,
             b: undefined,
@@ -114,11 +115,7 @@ export class JsConsole {
     handleInputChange(event) {
         let tArea = this.elements.textArea;
         if (event.key === 'Escape') {
-            this.input = "";
-            if (this.outputs.length == 0) {
-                this.inputs = [];
-            }
-            this.outputs = [];
+            this.clear();
         }
         else if (event.key === 'ArrowUp') {
             setTimeout(() => {
@@ -180,7 +177,10 @@ export class JsConsole {
                 this.inputs = [...this.inputs, ""];
                 this.input = "";
                 setTimeout(() => {
-                    this.elements.history.firstElementChild.lastElementChild.scrollIntoView(false);
+                    let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
+                    if (lastHistChild) {
+                        lastHistChild.scrollIntoView(false);
+                    }
                     this.elements.scrollMarker.scrollIntoView(false);
                 }, 100);
             }
@@ -225,7 +225,7 @@ export class JsConsole {
         try {
             res = props(function () {
                 return eval.apply(this, [base]);
-            }(), false);
+            }(), true);
         }
         catch (_) {
         }
@@ -252,6 +252,16 @@ export class JsConsole {
         this.input = this.inputs[i];
         this.historyIndex = 0;
         this.elements.textArea.focus();
+    }
+    handlePromptClick() {
+        this.showHistory = !this.showHistory;
+    }
+    clear() {
+        this.input = "";
+        if (this.outputs.length == 0) {
+            this.inputs = [];
+        }
+        this.outputs = [];
     }
     render() {
         return (h("div", null,
@@ -292,14 +302,16 @@ export class JsConsole {
             })),
             h("div", { class: "bottom-wrapper" },
                 h("div", { class: "history" },
-                    h("div", { class: "popup" }, this.inputs.slice(0, -1).map((entry, i) => {
+                    h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map((entry, i) => {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
-                h("span", { class: "prompt" }, ">"),
-                h("input", { list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onKeyDown: (event) => this.handleInputChange(event) }),
+                h("span", { class: { "prompt": true, "open": this.showHistory }, onClick: (_) => this.handlePromptClick() }, ">"),
+                h("input", { list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onChange: (event) => this.handleInputChange(event), onKeyDown: (event) => this.handleInputChange(event) }),
                 h("datalist", { id: "completionOptions" }, this.getAutoCompleteOptions(this.input).map((entry) => {
                     return (h("option", { value: entry }));
-                }))),
+                })),
+                h("span", { class: "clear", onClick: (_) => this.clear() },
+                    h("span", null, "x"))),
             h("div", { class: "scroll-marker" })));
     }
     static get is() { return "js-console"; }
@@ -329,6 +341,9 @@ export class JsConsole {
             "state": true
         },
         "rows": {
+            "state": true
+        },
+        "showHistory": {
             "state": true
         },
         "test": {
