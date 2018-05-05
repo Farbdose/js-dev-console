@@ -10,7 +10,7 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
             this.highlight = false;
             this.inViewPort = true;
             this.propCache = [];
-	        this.ownPropertyLength = 0;
+            this.ownPropertyLength = 0;
             this.externalRender = false;
             this.key = undefined;
             this.updateInterval = {
@@ -74,7 +74,7 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
             if (this.intervalTimer) {
                 clearTimeout(this.intervalTimer);
             }
-	        this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : __chunk_1.props(this.obj, this.excludeProto)[this.index]) : undefined;
+            this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : __chunk_1.props(this.obj, this.excludeProto)[this.index]) : undefined;
             //console.log("key", this.index, this.index>=0, Object.keys(this.obj), Object.keys(this.obj)[this.index], this.key);
             var value = this.obj;
             if (this.key) {
@@ -91,37 +91,37 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
                     this.expanded = true;
                 }
             }
-	        var doUpdate = function () {
-		        _this.childBase = [];
-		        _this.propCache = [];
-		        if (ObjectGui.isObject(value)) {
-			        _this.propCache = __chunk_1.props(value, _this.excludeProto);
-			        _this.propCache.forEach(function (_, i) {
-				        _this.childBase.push(i);
-			        });
-		        }
-		        setTimeout(function () {
-			        var children = _this.el.querySelectorAll("object-gui");
-			        for (var i = 0, len = children.length; i < len; i++) {
-				        children[i].update();
-			        }
-		        });
-		        _this.updateInterval.value = _this.updateInterval.base;
-	        };
+            var doUpdate = function () {
+                _this.childBase = [];
+                _this.propCache = [];
+                if (ObjectGui.isObject(value)) {
+                    _this.propCache = __chunk_1.props(value, _this.excludeProto);
+                    _this.propCache.forEach(function (_, i) {
+                        _this.childBase.push(i);
+                    });
+                }
+                setTimeout(function () {
+                    var children = _this.el.querySelectorAll("object-gui");
+                    for (var i = 0, len = children.length; i < len; i++) {
+                        children[i].update();
+                    }
+                });
+                _this.updateInterval.value = _this.updateInterval.base;
+            };
             if (!ObjectGui.isEqual(this.value, value)) {
                 this.externalRender = true;
                 this.value = value;
-	            doUpdate();
+                doUpdate();
             }
             else {
-	            var ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
-	            if (ownPropLen != this.ownPropertyLength) {
-		            this.ownPropertyLength = ownPropLen;
-		            doUpdate();
-	            }
-	            else {
-		            this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
-	            }
+                var ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
+                if (ownPropLen != this.ownPropertyLength) {
+                    this.ownPropertyLength = ownPropLen;
+                    doUpdate();
+                }
+                else {
+                    this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
+                }
             }
             this.inViewPort = this.objIsInViewport();
             if (this.tick) {
@@ -270,9 +270,9 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
                         "attr": "obj",
                         "watchCallbacks": ["objHandler"]
                     },
-	                "ownPropertyLength": {
-		                "state": true
-	                },
+                    "ownPropertyLength": {
+                        "state": true
+                    },
                     "parent": {
                         "type": "Any",
                         "attr": "parent"
@@ -285,9 +285,9 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
                         "attr": "tick",
                         "watchCallbacks": ["tickHandler"]
                     },
-	                "update": {
-		                "method": true
-	                },
+                    "update": {
+                        "method": true
+                    },
                     "value": {
                         "state": true
                     }

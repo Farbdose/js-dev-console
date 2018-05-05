@@ -86,7 +86,7 @@
         max-height: 50px;
         overflow-y: auto; }
         :host .bottom-wrapper .history .popup span {
-            white-space: nowrap;
+          white-space: nowrap;
           display: block;
           position: relative;
           bottom: 0;

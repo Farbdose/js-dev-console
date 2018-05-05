@@ -12,7 +12,7 @@ class ObjectGui {
         this.highlight = false;
         this.inViewPort = true;
         this.propCache = [];
-	    this.ownPropertyLength = 0;
+        this.ownPropertyLength = 0;
         this.externalRender = false;
         this.key = undefined;
         this.updateInterval = {
@@ -71,65 +71,66 @@ class ObjectGui {
         }
         return a === b;
     }
-
-	static get properties() {
-		return {
-			"el": {
-				"elementRef": true
-			},
-			"excludeProto": {
-				"type": "Any",
-				"attr": "exclude-proto"
-			},
-			"expanded": {
-				"state": true
-			},
-			"getPropCache": {
-				"method": true
-			},
-			"highlight": {
-				"state": true
-			},
-			"index": {
-				"type": Number,
-				"attr": "index",
-				"watchCallbacks": ["keyHandler"]
-			},
-			"inViewPort": {
-				"state": true
-			},
-			"isLast": {
-				"type": Boolean,
-				"attr": "is-last"
-			},
-			"obj": {
-				"type": "Any",
-				"attr": "obj",
-				"watchCallbacks": ["objHandler"]
-			},
-			"ownPropertyLength": {
-				"state": true
-			},
-			"parent": {
-				"type": "Any",
-				"attr": "parent"
-			},
-			"propCache": {
-				"state": true
-			},
-			"tick": {
-				"type": Boolean,
-				"attr": "tick",
-				"watchCallbacks": ["tickHandler"]
-			},
-			"update": {
-				"method": true
-			},
-			"value": {
-				"state": true
+    update() {
+        if (this.intervalTimer) {
+            clearTimeout(this.intervalTimer);
         }
-		};
-	}
+        this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : props(this.obj, this.excludeProto)[this.index]) : undefined;
+        //console.log("key", this.index, this.index>=0, Object.keys(this.obj), Object.keys(this.obj)[this.index], this.key);
+        let value = this.obj;
+        if (this.key) {
+            try {
+                value = this.obj[this.key];
+            }
+            catch (e) {
+                //TODO add support for getters and setters
+                value = undefined; //this.excludeProto[this.key];
+            }
+        }
+        else {
+            if (typeof this.expanded === "undefined") {
+                this.expanded = true;
+            }
+        }
+        let doUpdate = () => {
+            this.childBase = [];
+            this.propCache = [];
+            if (ObjectGui.isObject(value)) {
+                this.propCache = props(value, this.excludeProto);
+                this.propCache.forEach((_, i) => {
+                    this.childBase.push(i);
+                });
+            }
+            setTimeout(() => {
+                let children = this.el.querySelectorAll("object-gui");
+                for (let i = 0, len = children.length; i < len; i++) {
+                    children[i].update();
+                }
+            });
+            this.updateInterval.value = this.updateInterval.base;
+        };
+        if (!ObjectGui.isEqual(this.value, value)) {
+            this.externalRender = true;
+            this.value = value;
+            doUpdate();
+        }
+        else {
+            let ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
+            if (ownPropLen != this.ownPropertyLength) {
+                this.ownPropertyLength = ownPropLen;
+                doUpdate();
+            }
+            else {
+                this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
+            }
+        }
+        this.inViewPort = this.objIsInViewport();
+        if (this.tick) {
+            this.intervalTimer = setTimeout(() => {
+                this.update();
+            }, this.updateInterval.value);
+        }
+    }
     objIsInViewport() {
         let rect = this.el.getBoundingClientRect();
         let pHeight = (window.innerHeight || document.documentElement.clientHeight);
@@ -245,67 +246,62 @@ class ObjectGui {
             end));
     }
     static get is() { return "object-gui"; }
-
-	update() {
-		if (this.intervalTimer) {
-			clearTimeout(this.intervalTimer);
-		}
-		this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : props(this.obj, this.excludeProto)[this.index]) : undefined;
-		//console.log("key", this.index, this.index>=0, Object.keys(this.obj), Object.keys(this.obj)[this.index], this.key);
-		let value = this.obj;
-		if (this.key) {
-			try {
-				value = this.obj[this.key];
-			}
-			catch (e) {
-				//TODO add support for getters and setters
-				value = undefined; //this.excludeProto[this.key];
-			}
+    static get properties() { return {
+        "el": {
+            "elementRef": true
+        },
+        "excludeProto": {
+            "type": "Any",
+            "attr": "exclude-proto"
+        },
+        "expanded": {
+            "state": true
+        },
+        "getPropCache": {
+            "method": true
+        },
+        "highlight": {
+            "state": true
+        },
+        "index": {
+            "type": Number,
+            "attr": "index",
+            "watchCallbacks": ["keyHandler"]
+        },
+        "inViewPort": {
+            "state": true
+        },
+        "isLast": {
+            "type": Boolean,
+            "attr": "is-last"
+        },
+        "obj": {
+            "type": "Any",
+            "attr": "obj",
+            "watchCallbacks": ["objHandler"]
+        },
+        "ownPropertyLength": {
+            "state": true
+        },
+        "parent": {
+            "type": "Any",
+            "attr": "parent"
+        },
+        "propCache": {
+            "state": true
+        },
+        "tick": {
+            "type": Boolean,
+            "attr": "tick",
+            "watchCallbacks": ["tickHandler"]
+        },
+        "update": {
+            "method": true
+        },
+        "value": {
+            "state": true
         }
-		else {
-			if (typeof this.expanded === "undefined") {
-				this.expanded = true;
-			}
-		}
-		let doUpdate = () => {
-			this.childBase = [];
-			this.propCache = [];
-			if (ObjectGui.isObject(value)) {
-				this.propCache = props(value, this.excludeProto);
-				this.propCache.forEach((_, i) => {
-					this.childBase.push(i);
-				});
-			}
-			setTimeout(() => {
-				let children = this.el.querySelectorAll("object-gui");
-				for (let i = 0, len = children.length; i < len; i++) {
-					children[i].update();
-				}
-			});
-			this.updateInterval.value = this.updateInterval.base;
-		};
-		if (!ObjectGui.isEqual(this.value, value)) {
-			this.externalRender = true;
-			this.value = value;
-			doUpdate();
-		}
-		else {
-			let ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
-			if (ownPropLen != this.ownPropertyLength) {
-				this.ownPropertyLength = ownPropLen;
-				doUpdate();
-			}
-			else {
-				this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
-			}
-		}
-		this.inViewPort = this.objIsInViewport();
-		if (this.tick) {
-			this.intervalTimer = setTimeout(() => {
-				this.update();
-			}, this.updateInterval.value);
-		}
-	}
+    }; }
     static get style() { return "object-gui {\n  display: block;\n  font-size: 11px;\n  font-family: Consolas, monospace; }\n  object-gui .key {\n    color: #005cc5; }\n  object-gui .string {\n    color: #d73a49; }\n  object-gui .number, object-gui .boolean {\n    color: blue; }\n  object-gui .func {\n    font-style: italic; }\n    object-gui .func .expand {\n      display: none; }\n  object-gui .type, object-gui .NaN, object-gui .Infinity, object-gui .null, object-gui .undefined {\n    color: #6f42c1; }\n  object-gui .undefined {\n    color: darkgrey; }\n  object-gui .type {\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n  object-gui .children {\n    display: table;\n    padding-left: 25px; }\n  object-gui .clickable {\n    cursor: pointer; }\n  object-gui .expand {\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    background-color: darkgrey; }\n  object-gui .no-select {\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n  object-gui .highlight {\n    border-radius: 2px;\n    background-color: rgba(100, 80, 150, 0);\n    -webkit-transition: background-color 0.6s ease;\n    transition: background-color 0.6s ease; }\n    object-gui .highlight.top {\n      border-bottom-left-radius: 0;\n      border-bottom-right-radius: 0; }\n    object-gui .highlight.children {\n      border-top-right-radius: 0;\n      border-bottom-left-radius: 0; }\n    object-gui .highlight.end {\n      border-top-left-radius: 0;\n      border-top-right-radius: 0; }\n    object-gui .highlight.highlighted {\n      background-color: rgba(100, 80, 150, 0.2);\n      -webkit-transition: background-color 0.3s ease;\n      transition: background-color 0.3s ease; }"; }
 }
 ObjectGui.baseObjectProps = Object.getOwnPropertyNames(Object.prototype).join("");

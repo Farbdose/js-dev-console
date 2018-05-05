@@ -1,5 +1,4 @@
 import '../../stencil.core';
-
 export declare class ObjectGui {
     parent: any;
     excludeProto: any;
@@ -12,7 +11,7 @@ export declare class ObjectGui {
     highlight: boolean;
     inViewPort: boolean;
     propCache: Array<string>;
-	ownPropertyLength: number;
+    ownPropertyLength: number;
     el: HTMLElement;
     updateInterval: {
         value: number;

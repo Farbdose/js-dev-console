@@ -70,7 +70,7 @@ declare global {
       'obj': any;
       'parent': any;
       'tick': boolean;
-	    'update': () => void;
+      'update': () => void;
     }
   }
 
