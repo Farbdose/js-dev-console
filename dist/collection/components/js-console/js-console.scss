@@ -100,6 +100,7 @@
 		height: calc(1rem + 5px);
 
 		.clear {
+			user-select: none;
 			cursor: pointer;
 			display: inline-block;
 			background-color: lightgrey;
@@ -180,6 +181,7 @@
 		}
 
 		.prompt {
+			user-select: none;
 			cursor: pointer;
 			transition: all 0.15s ;
 			transform: scaleX(0.5);

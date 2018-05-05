@@ -1,5 +1,4 @@
 import '../../stencil.core';
-
 export declare class JsConsole {
     url: string;
     first: string;
@@ -35,11 +34,10 @@ export declare class JsConsole {
         value: any;
         type: string;
     };
-    handleInputChange(event: any): void;
+    handleInputChange(event: Event): void;
     getAutoCompleteOptions(command: string): any[];
     handleHistoryClick(i: any): void;
-
-	handlePromptClick(e: Event): void;
-    clear(): void;
+    handlePromptClick(event: TouchEvent | MouseEvent): void;
+    clear(event?: Event): void;
     render(): JSX.Element;
 }

@@ -1,5 +1,4 @@
 import '../../stencil.core';
-
 export declare class ObjectGui {
     parent: any;
     excludeProto: any;

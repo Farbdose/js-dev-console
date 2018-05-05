@@ -118,10 +118,10 @@ class JsConsole {
     }
     handleInputChange(event) {
         let tArea = this.elements.textArea;
-        if (event.key === 'Escape') {
+        if (event["key"] === 'Escape') {
             this.clear();
         }
-        else if (event.key === 'ArrowUp') {
+        else if (event["key"] === 'ArrowUp') {
             setTimeout(() => {
                 if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
                     if (this.historyIndex < this.inputs.length - 1) {
@@ -131,7 +131,7 @@ class JsConsole {
                 }
             });
         }
-        else if (event.key === 'ArrowDown') {
+        else if (event["key"] === 'ArrowDown') {
             setTimeout(() => {
                 if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
                     if (this.historyIndex > 0) {
@@ -141,7 +141,7 @@ class JsConsole {
                 }
             });
         }
-        else if (event.key === 'Enter' && !event.shiftKey) {
+        else if (event["key"] === 'Enter' && !event["shiftKey"]) {
             event.preventDefault();
             if (this.input.trim().length > 0) {
                 this.log("Evalutating: ", this.input);
@@ -189,13 +189,14 @@ class JsConsole {
                 }, 100);
             }
         }
-        else if (event.key === 'Enter') {
+        else if (event["key"] === 'Enter') {
             let val = tArea.value;
             this.input = val.substring(0, tArea.selectionStart) + "\n" + val.substring(tArea.selectionStart);
             this.rows = Math.ceil((tArea.scrollHeight - 14) / 14) + 1;
             this.setInputEntry(this.input);
         }
         else {
+            event.preventDefault();
             setTimeout(() => {
                 this.input = tArea.value;
                 this.rows = Math.ceil((tArea.scrollHeight - 14) / 14);
@@ -257,68 +258,20 @@ class JsConsole {
         this.historyIndex = 0;
         this.elements.textArea.focus();
     }
-
-	static get style() {
-		return ":host {\n  width: 100%;\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible; }\n  :host .url {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  :host .scroll-mask {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  :host .scroll {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      :host .scroll {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      :host .scroll::-webkit-scrollbar {\n        display: none; } }\n  :host .entries {\n    overflow: hidden; }\n  :host .output {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    :host .output.log > span:not(:last-child), :host .output.info > span:not(:last-child), :host .output.warn > span:not(:last-child), :host .output.debug > span:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    :host .output.info {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    :host .output.warn {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    :host .output.debug {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    :host .output.error {\n      white-space: pre;\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n  :host .bottom-wrapper {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    height: calc(1rem + 5px); }\n    :host .bottom-wrapper .clear {\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      :host .bottom-wrapper .clear span {\n        width: 7px;\n        text-align: center;\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate(-50%, -54%);\n        transform: translate(-50%, -54%); }\n    :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {\n      font-size: 1rem;\n      line-height: 1rem;\n      height: 1rem; }\n    :host .bottom-wrapper .history {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      :host .bottom-wrapper .history .popup {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        :host .bottom-wrapper .history .popup.open {\n          opacity: 1; }\n        :host .bottom-wrapper .history .popup span {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          :host .bottom-wrapper .history .popup span:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    :host .bottom-wrapper .input-area {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      :host .bottom-wrapper .input-area:focus {\n        outline: none !important; }\n    :host .bottom-wrapper .prompt {\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 1.2rem;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      :host .bottom-wrapper .prompt.open {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }";
-	}
-    clear() {
+    handlePromptClick(event) {
+        this.showHistory = !this.showHistory;
+        event.preventDefault();
+    }
+    clear(event) {
         this.input = "";
         if (this.outputs.length == 0) {
             this.inputs = [];
         }
         this.outputs = [];
+        if (event) {
+            event.preventDefault();
+        }
     }
-
-	handlePromptClick(e) {
-		this.showHistory = !this.showHistory;
-		e.preventDefault();
-	}
-
-	static get is() {
-		return "js-console";
-	}
-
-	static get encapsulation() {
-		return "shadow";
-	}
-
-	static get properties() {
-		return {
-			"el": {
-				"elementRef": true
-			},
-			"first": {
-				"type": String,
-				"attr": "first"
-			},
-			"historyIndex": {
-				"state": true
-			},
-			"input": {
-				"state": true
-			},
-			"inputs": {
-				"state": true
-			},
-			"last": {
-				"type": String,
-				"attr": "last"
-			},
-			"outputs": {
-				"state": true
-			},
-			"rows": {
-				"state": true
-			},
-			"showHistory": {
-				"state": true
-			},
-			"test": {
-				"state": true
-			}
-		};
-	}
-
     render() {
         return (h("div", null,
             h("div", { class: "url" },
@@ -361,19 +314,52 @@ class JsConsole {
                     h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map((entry, i) => {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
-	            h("span", {
-		            class: {"prompt": true, "open": this.showHistory},
-		            onTouchStart: (e) => this.handlePromptClick(e),
-		            onMouseDown: (e) => this.handlePromptClick(e)
-	            }, ">"),
+                h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
                 h("input", { list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onChange: (event) => this.handleInputChange(event), onKeyDown: (event) => this.handleInputChange(event) }),
                 h("datalist", { id: "completionOptions" }, this.getAutoCompleteOptions(this.input).map((entry) => {
                     return (h("option", { value: entry }));
                 })),
-                h("span", { class: "clear", onClick: (_) => this.clear() },
+                h("span", { class: "clear", onTouchStart: (e) => this.clear(e), onMouseDown: (e) => this.clear(e) },
                     h("span", null, "x"))),
             h("div", { class: "scroll-marker" })));
     }
+    static get is() { return "js-console"; }
+    static get encapsulation() { return "shadow"; }
+    static get properties() { return {
+        "el": {
+            "elementRef": true
+        },
+        "first": {
+            "type": String,
+            "attr": "first"
+        },
+        "historyIndex": {
+            "state": true
+        },
+        "input": {
+            "state": true
+        },
+        "inputs": {
+            "state": true
+        },
+        "last": {
+            "type": String,
+            "attr": "last"
+        },
+        "outputs": {
+            "state": true
+        },
+        "rows": {
+            "state": true
+        },
+        "showHistory": {
+            "state": true
+        },
+        "test": {
+            "state": true
+        }
+    }; }
+    static get style() { return ":host {\n  width: 100%;\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible; }\n  :host .url {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  :host .scroll-mask {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  :host .scroll {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      :host .scroll {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      :host .scroll::-webkit-scrollbar {\n        display: none; } }\n  :host .entries {\n    overflow: hidden; }\n  :host .output {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    :host .output.log > span:not(:last-child), :host .output.info > span:not(:last-child), :host .output.warn > span:not(:last-child), :host .output.debug > span:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    :host .output.info {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    :host .output.warn {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    :host .output.debug {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    :host .output.error {\n      white-space: pre;\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n  :host .bottom-wrapper {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    height: calc(1rem + 5px); }\n    :host .bottom-wrapper .clear {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      :host .bottom-wrapper .clear span {\n        width: 7px;\n        text-align: center;\n        position: absolute;\n        top: 50%;\n        left: 50%;\n        -webkit-transform: translate(-50%, -54%);\n        transform: translate(-50%, -54%); }\n    :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {\n      font-size: 1rem;\n      line-height: 1rem;\n      height: 1rem; }\n    :host .bottom-wrapper .history {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      :host .bottom-wrapper .history .popup {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        :host .bottom-wrapper .history .popup.open {\n          opacity: 1; }\n        :host .bottom-wrapper .history .popup span {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          :host .bottom-wrapper .history .popup span:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    :host .bottom-wrapper .input-area {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      :host .bottom-wrapper .input-area:focus {\n        outline: none !important; }\n    :host .bottom-wrapper .prompt {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 1.2rem;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      :host .bottom-wrapper .prompt.open {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }"; }
 }
 
 export { JsConsole };

@@ -154,12 +154,12 @@ export class JsConsole {
 		return i > 0 ? out[i] : undefined;
 	}
 
-	handleInputChange(event) {
+	handleInputChange(event: Event) {
 		let tArea = this.elements.textArea;
 
-		if (event.key === 'Escape') {
+		if (event["key"]  === 'Escape') {
 			this.clear();
-		} else if (event.key === 'ArrowUp') {
+		} else if (event["key"]  === 'ArrowUp') {
 			setTimeout(() => {
 				if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
 					if (this.historyIndex < this.inputs.length - 1) {
@@ -168,7 +168,7 @@ export class JsConsole {
 					}
 				}
 			});
-		} else if (event.key === 'ArrowDown') {
+		} else if (event["key"]  === 'ArrowDown') {
 			setTimeout(() => {
 				if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
 					if (this.historyIndex > 0) {
@@ -178,7 +178,7 @@ export class JsConsole {
 				}
 			});
 		}
-		else if (event.key === 'Enter' && !event.shiftKey) {
+		else if (event["key"] === 'Enter' && !event["shiftKey"]) {
 			event.preventDefault();
 
 			if (this.input.trim().length > 0) {
@@ -231,12 +231,13 @@ export class JsConsole {
 					this.elements.scrollMarker.scrollIntoView(false);
 				}, 100);
 			}
-		} else if (event.key === 'Enter') {
+		} else if (event["key"]  === 'Enter') {
 			let val = tArea.value;
 			this.input = val.substring(0, tArea.selectionStart) + "\n" + val.substring(tArea.selectionStart);
 			this.rows = Math.ceil((tArea.scrollHeight - 14) / 14) + 1;
 			this.setInputEntry(this.input);
 		} else {
+			event.preventDefault();
 			setTimeout(() => {
 				this.input = tArea.value;
 				this.rows = Math.ceil((tArea.scrollHeight - 14) / 14);
@@ -309,12 +310,12 @@ export class JsConsole {
 		this.elements.textArea.focus();
 	}
 
-	handlePromptClick(e: Event) {
+	handlePromptClick(event: TouchEvent | MouseEvent) {
 		this.showHistory = !this.showHistory;
-		e.preventDefault();
+		event.preventDefault();
 	}
 
-	clear() {
+	clear(event?: Event) {
 		this.input = "";
 
 		if (this.outputs.length == 0) {
@@ -322,6 +323,10 @@ export class JsConsole {
 		}
 
 		this.outputs = [];
+
+		if (event) {
+			event.preventDefault();
+		}
 	}
 
 	render() {
@@ -400,7 +405,9 @@ export class JsConsole {
 							return (<option value={entry}></option>);
 						})}
 					</datalist>
-					<span class="clear" onClick={(_) => this.clear()}><span>x</span></span>
+					<span class="clear"
+					      onTouchStart={(e) => this.clear(e)}
+					      onMouseDown={(e) => this.clear(e)}><span>x</span></span>
 				</div>
 				<div class="scroll-marker"></div>
 			</div>
