@@ -115,6 +115,9 @@
           "name": "inViewPort"
         },
         {
+	        "name": "ownPropertyLength"
+        },
+	      {
           "name": "propCache"
         },
         {
@@ -124,6 +127,9 @@
       "methods": [
         {
           "name": "getPropCache"
+        },
+	      {
+		      "name": "update"
         }
       ],
       "hostElement": {

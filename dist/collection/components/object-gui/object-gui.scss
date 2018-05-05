@@ -1,86 +1,86 @@
 object-gui {
-		display: block;
-		font-size: 11px;
-		font-family: Consolas, monospace;
+	display: block;
+	font-size: 11px;
+	font-family: Consolas, monospace;
 
-		.key {
-			color: #005cc5;
-		}
+	.key {
+		color: #005cc5;
+	}
 
-		.string {
-			color: #d73a49;
-		}
+	.string {
+		color: #d73a49;
+	}
 
-		.number, .boolean {
-			color: blue;
-		}
+	.number, .boolean {
+		color: blue;
+	}
 
-		.func {
-			font-style: italic;
-
-			.expand {
-				display: none;
-			}
-		}
-
-		.type, .NaN, .Infinity, .null, .undefined {
-			color: #6f42c1;
-		}
-
-		.undefined {
-			color: darkgrey;
-		}
-
-		.type {
-			user-select: none;
-		}
-
-		.children {
-			display: table;
-			padding-left: 25px;
-		}
-
-		.clickable {
-			cursor: pointer;
-		}
+	.func {
+		font-style: italic;
 
 		.expand {
-			user-select: none;
-			background-color: darkgrey;
-		}
-
-		.no-select {
-			user-select: none;
-		}
-
-		.highlight {
-
-			border-radius: 2px;
-
-			&.top {
-				border-bottom-left-radius: 0;
-				border-bottom-right-radius: 0;
-			}
-
-			&.children {
-				border-top-right-radius: 0;
-				border-bottom-left-radius: 0;
-			}
-
-			&.end {
-				border-top-left-radius: 0;
-				border-top-right-radius: 0;
-			}
-
-			&.highlighted {
-				background-color: rgba(100, 80, 150, 0.2);
-				transition: background-color 0.3s ease;
-			}
-
-			background-color: rgba(100, 80, 150, 0);
-			transition: background-color 0.6s ease;
+			display: none;
 		}
 	}
+
+	.type, .NaN, .Infinity, .null, .undefined {
+		color: #6f42c1;
+	}
+
+	.undefined {
+		color: darkgrey;
+	}
+
+	.type {
+		user-select: none;
+	}
+
+	.children {
+		display: table;
+		padding-left: 25px;
+	}
+
+	.clickable {
+		cursor: pointer;
+	}
+
+	.expand {
+		user-select: none;
+		background-color: darkgrey;
+	}
+
+	.no-select {
+		user-select: none;
+	}
+
+	.highlight {
+
+		border-radius: 2px;
+
+		&.top {
+			border-bottom-left-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		&.children {
+			border-top-right-radius: 0;
+			border-bottom-left-radius: 0;
+		}
+
+		&.end {
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+
+		&.highlighted {
+			background-color: rgba(100, 80, 150, 0.2);
+			transition: background-color 0.3s ease;
+		}
+
+		background-color: rgba(100, 80, 150, 0);
+		transition: background-color 0.6s ease;
+	}
+}
 
 
 

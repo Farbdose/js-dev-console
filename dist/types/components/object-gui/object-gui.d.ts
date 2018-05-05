@@ -1,4 +1,5 @@
 import '../../stencil.core';
+
 export declare class ObjectGui {
     parent: any;
     excludeProto: any;
@@ -11,6 +12,7 @@ export declare class ObjectGui {
     highlight: boolean;
     inViewPort: boolean;
     propCache: Array<string>;
+	ownPropertyLength: number;
     el: HTMLElement;
     updateInterval: {
         value: number;
@@ -45,7 +47,6 @@ export declare class ObjectGui {
     objIsInViewport(): boolean;
     expandClick(): void;
     getType(): any;
-    props(obj: any): string[];
     startAnimation(callback: any): void;
     clearTimer(timer: any): void;
     getPropCache(): Array<string>;

@@ -1,4 +1,5 @@
 import { Component, Element, Prop, State } from '@stencil/core';
+import { props } from "../utils";
 
 @Component({
 	tag: 'js-console',
@@ -43,11 +44,12 @@ export class JsConsole {
 	@State() rows: number = 1;
 
 	elements: {
-		textArea: HTMLTextAreaElement,
+		textArea: HTMLInputElement,
 		scrollMarker: HTMLDivElement,
 		history: HTMLDivElement
 	};
 
+	inputBase = "";
 	counter: number = 0;
 	log: any;
 
@@ -63,7 +65,8 @@ export class JsConsole {
 
 	constructor() {
 		this.log = console.log;
-		this.log = () => {};
+		this.log = () => {
+		};
 		["log", "debug", "warn", "error"].forEach((key) => {
 			console[key] = this.proxy(console, console[key], key, (args) => this.handleConsoleEvent(args));
 		});
@@ -74,7 +77,9 @@ export class JsConsole {
 		}, 150);
 
 		if (!window["debug"]) {
-			class Debug {}
+			class Debug {
+			}
+
 			window["debug"] = new Debug();
 		}
 
@@ -242,6 +247,64 @@ export class JsConsole {
 		}
 	}
 
+	getAutoCompleteOptions(command: string) {
+		//https://regex101.com/r/3fvjJu/10
+		let wrappedCommand = command;
+
+		let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
+		let matches = reg.exec(command);
+		let prefix = matches ? matches[1] : undefined;
+		reg.lastIndex = 0;
+
+		this.inputBase = command.replace(reg, "$1");
+		reg.lastIndex = 0;
+
+		if (matches) {
+			matches[2] = "this." + matches[2];
+			wrappedCommand = matches.slice(2).join("");
+			matches = reg.exec(wrappedCommand);
+			reg.lastIndex = 0;
+			//console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
+		}
+
+		let base = "";
+		let prop;
+		let res = [];
+
+		if (matches) {
+			base += matches[2] || "";
+			prop = matches[5] || "";
+		}
+
+		try {
+			res = props(function () {
+				return eval.apply(this, [base]);
+			}(), false);
+		} catch (_) {
+		}
+
+		if (base && base != "") {
+			res = res ? res.filter((p) => {
+				return prop ? (p.indexOf(prop) == 0) : true;
+			}).map((e) => {
+				base = base.replace(/^this\.?/, "");
+				if (base == "") {
+					matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
+				}
+				return prefix + base + matches[3] + (matches[4] || "") + e;
+			}) : [];
+
+		} else {
+			res = res.map((e) => {
+				return (prefix || command) + e.replace(/^this\.?/, "");
+			});
+		}
+
+		res.length = 100;
+
+		return res;// ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
+	}
+
 	handleHistoryClick(i) {
 		this.input = this.inputs[i];
 		this.historyIndex = 0;
@@ -252,32 +315,52 @@ export class JsConsole {
 		return (
 			<div>
 				<div class="url"><a href={this.url}>Github</a></div>
-				<div class="scroll-mask"><div class="scroll"><div class="output">
-					<object-gui obj={window["debug"]} excludeProto={true}></object-gui>
-				</div></div></div>
+				<div class="scroll-mask">
+					<div class="scroll">
+						<div class="output">
+							<object-gui obj={window["debug"]} excludeProto={true}></object-gui>
+						</div>
+					</div>
+				</div>
 				<div class="entries">
-				{
-					this.outputs.map((entry) => {
-						if (entry.type == "object") {
-							return (<div class="scroll-mask"><div class="scroll"><div class="output">
-								<object-gui obj={entry.value}></object-gui>
-							</div></div></div>);
-						} else if (entry.type == "log") {
-							return (<div class="scroll-mask"><div class="scroll"><div class="output log">{
-								entry.value.map((e) => {
-									switch (typeof e) {
-										case "string": return (<span>{e}</span>);
-										case "number": return (<span class="number">{e}</span>);
-										case "boolean": return (<span class="boolean">{e}</span>);
-										default: return (<object-gui obj={e}></object-gui>);
-									}
-								})
-							}</div></div></div>);
-						} else if (entry.type != "") {
-							return (<div class="scroll-mask"><div class="scroll"><div class={"output " + entry.type}>{"" + entry.value}</div></div></div>);
-						}
-					})
-				}
+					{
+						this.outputs.map((entry) => {
+							if (entry.type == "object") {
+								return (<div class="scroll-mask">
+									<div class="scroll">
+										<div class="output">
+											<object-gui obj={entry.value}></object-gui>
+										</div>
+									</div>
+								</div>);
+							} else if (entry.type == "log") {
+								return (<div class="scroll-mask">
+									<div class="scroll">
+										<div class="output log">{
+											entry.value.map((e) => {
+												switch (typeof e) {
+													case "string":
+														return (<span>{e}</span>);
+													case "number":
+														return (<span class="number">{e}</span>);
+													case "boolean":
+														return (<span class="boolean">{e}</span>);
+													default:
+														return (<object-gui obj={e}></object-gui>);
+												}
+											})
+										}</div>
+									</div>
+								</div>);
+							} else if (entry.type != "") {
+								return (<div class="scroll-mask">
+									<div class="scroll">
+										<div class={"output " + entry.type}>{"" + entry.value}</div>
+									</div>
+								</div>);
+							}
+						})
+					}
 				</div>
 				<div class="bottom-wrapper">
 					<div class="history">
@@ -288,15 +371,19 @@ export class JsConsole {
 						}</div>
 					</div>
 					<span class="prompt">&gt;</span>
-					<textarea
+					<input
+						list="completionOptions"
 						id="input-area"
 						class="input-area"
-						autoFocus
 						spellCheck={false}
 						value={this.input}
-						rows={this.rows}
 						onKeyDown={(event) => this.handleInputChange(event)}>
-					</textarea>
+					</input>
+					<datalist id="completionOptions">
+						{this.getAutoCompleteOptions(this.input).map((entry) => {
+							return (<option value={entry}></option>);
+						})}
+					</datalist>
 				</div>
 				<div class="scroll-marker"></div>
 			</div>

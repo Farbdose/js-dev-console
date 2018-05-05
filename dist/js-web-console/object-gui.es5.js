@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
+JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], function (exports, __chunk_1) {
     var h = window.JsWebConsole.h;
     var ObjectGui = /** @class */ (function () {
         function ObjectGui() {
@@ -10,6 +10,7 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
             this.highlight = false;
             this.inViewPort = true;
             this.propCache = [];
+	        this.ownPropertyLength = 0;
             this.externalRender = false;
             this.key = undefined;
             this.updateInterval = {
@@ -73,7 +74,7 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
             if (this.intervalTimer) {
                 clearTimeout(this.intervalTimer);
             }
-            this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : this.props(this.obj)[this.index]) : undefined;
+	        this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : __chunk_1.props(this.obj, this.excludeProto)[this.index]) : undefined;
             //console.log("key", this.index, this.index>=0, Object.keys(this.obj), Object.keys(this.obj)[this.index], this.key);
             var value = this.obj;
             if (this.key) {
@@ -90,21 +91,37 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
                     this.expanded = true;
                 }
             }
+	        var doUpdate = function () {
+		        _this.childBase = [];
+		        _this.propCache = [];
+		        if (ObjectGui.isObject(value)) {
+			        _this.propCache = __chunk_1.props(value, _this.excludeProto);
+			        _this.propCache.forEach(function (_, i) {
+				        _this.childBase.push(i);
+			        });
+		        }
+		        setTimeout(function () {
+			        var children = _this.el.querySelectorAll("object-gui");
+			        for (var i = 0, len = children.length; i < len; i++) {
+				        children[i].update();
+			        }
+		        });
+		        _this.updateInterval.value = _this.updateInterval.base;
+	        };
             if (!ObjectGui.isEqual(this.value, value)) {
                 this.externalRender = true;
                 this.value = value;
-                this.childBase = [];
-                this.propCache = [];
-                if (ObjectGui.isObject(value)) {
-                    this.propCache = this.props(value);
-                    this.propCache.forEach(function (_, i) {
-                        _this.childBase.push(i);
-                    });
-                }
-                this.updateInterval.value = this.updateInterval.base;
+	            doUpdate();
             }
             else {
-                this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
+	            var ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
+	            if (ownPropLen != this.ownPropertyLength) {
+		            this.ownPropertyLength = ownPropLen;
+		            doUpdate();
+	            }
+	            else {
+		            this.updateInterval.value = Math.min(this.updateInterval.max, this.updateInterval.value * this.updateInterval.factor);
+	            }
             }
             this.inViewPort = this.objIsInViewport();
             if (this.tick) {
@@ -140,28 +157,6 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
             else {
                 return type;
             }
-        };
-        //https://stackoverflow.com/a/30158566/2422125
-        ObjectGui.prototype.props = function (obj) {
-            var o = obj;
-            var res = Object.getOwnPropertyNames(o);
-            for (; o != null && o !== Object; o = Object.getPrototypeOf(o)) {
-                var op = Object.getOwnPropertyNames(o);
-                for (var i = 0; i < op.length; i++) {
-                    if (res.indexOf(op[i]) == -1 &&
-                        Object.getOwnPropertyDescriptor(o, op[i]).get) {
-                        res.push(op[i]);
-                    }
-                }
-            }
-            var index = res.indexOf("__proto__");
-            if (index > -1) {
-                //let propStr = Object.getOwnPropertyNames(obj["__proto__"]).join("");
-                if (this.excludeProto || Array.isArray(obj) || obj.__proto__.constructor.name === "Object") {
-                    res.splice(index, 1);
-                }
-            }
-            return res;
         };
         ObjectGui.prototype.startAnimation = function (callback) {
             requestAnimationFrame(function () {
@@ -275,6 +270,9 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
                         "attr": "obj",
                         "watchCallbacks": ["objHandler"]
                     },
+	                "ownPropertyLength": {
+		                "state": true
+	                },
                     "parent": {
                         "type": "Any",
                         "attr": "parent"
@@ -287,6 +285,9 @@ JsWebConsole.loadBundle('object-gui', ['exports'], function (exports) {
                         "attr": "tick",
                         "watchCallbacks": ["tickHandler"]
                     },
+	                "update": {
+		                "method": true
+	                },
                     "value": {
                         "state": true
                     }

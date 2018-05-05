@@ -1,7 +1,6 @@
 :host {
   width: 100%;
   position: absolute;
-  overflow: hidden;
   font-family: Consolas, monospace;
   font-size: 11px; }
   :host .url {
@@ -87,6 +86,7 @@
         max-height: 50px;
         overflow-y: auto; }
         :host .bottom-wrapper .history .popup span {
+            white-space: nowrap;
           display: block;
           position: relative;
           bottom: 0;
@@ -100,7 +100,6 @@
       box-sizing: content-box;
       left: 0;
       right: 0;
-      margin-top: 1px;
       margin-bottom: 1px;
       border: none;
       width: calc(100% - 24px);

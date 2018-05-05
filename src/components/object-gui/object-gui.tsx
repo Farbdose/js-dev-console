@@ -1,4 +1,5 @@
-import { Component, Prop, State, Watch, Element, Method } from '@stencil/core';
+import { Component, Element, Method, Prop, State, Watch } from '@stencil/core';
+import { props } from "../utils";
 
 @Component({
 	tag: 'object-gui',
@@ -17,6 +18,7 @@ export class ObjectGui {
 	@State() highlight: boolean = false;
 	@State() inViewPort: boolean = true;
 	@State() propCache: Array<string> = [];
+	@State() ownPropertyLength: number = 0;
 	@Element() el: HTMLElement;
 
 	updateInterval: {
@@ -75,7 +77,7 @@ export class ObjectGui {
 	}
 
 	static isNumber(a: any) {
-		return ((!!a) && isFinite(a)) || a === Infinity ;
+		return ((!!a) && isFinite(a)) || a === Infinity;
 	}
 
 	static isString(a: any) {
@@ -111,12 +113,13 @@ export class ObjectGui {
 		return a === b;
 	}
 
+	@Method()
 	update() {
 		if (this.intervalTimer) {
 			clearTimeout(this.intervalTimer);
 		}
 
-		this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : this.props(this.obj)[this.index]) : undefined;
+		this.key = (this.index >= 0) ? (this.parent ? this.parent.getPropCache()[this.index] : props(this.obj, this.excludeProto)[this.index]) : undefined;
 		//console.log("key", this.index, this.index>=0, Object.keys(this.obj), Object.keys(this.obj)[this.index], this.key);
 
 		let value = this.obj;
@@ -133,25 +136,42 @@ export class ObjectGui {
 			}
 		}
 
-		if (!ObjectGui.isEqual(this.value, value)) {
-			this.externalRender = true;
-			this.value = value;
-
+		let doUpdate = () => {
 			this.childBase = [];
 			this.propCache = [];
 			if (ObjectGui.isObject(value)) {
-				this.propCache = this.props(value);
+				this.propCache = props(value, this.excludeProto);
 				this.propCache.forEach((_, i) => {
 					this.childBase.push(i);
 				});
 			}
 
+			setTimeout(() => {
+				let children = this.el.querySelectorAll("object-gui");
+				for (let i = 0, len = children.length; i < len; i++) {
+					children[i].update();
+				}
+			});
+
 			this.updateInterval.value = this.updateInterval.base;
+		};
+
+		if (!ObjectGui.isEqual(this.value, value)) {
+			this.externalRender = true;
+			this.value = value;
+			doUpdate();
 		} else {
-			this.updateInterval.value = Math.min(
-				this.updateInterval.max,
-				this.updateInterval.value * this.updateInterval.factor
-			);
+			let ownPropLen = ObjectGui.isObject(value) ? Object.getOwnPropertyNames(value).length : 0;
+			if (ownPropLen != this.ownPropertyLength) {
+				this.ownPropertyLength = ownPropLen;
+				doUpdate();
+			} else {
+
+				this.updateInterval.value = Math.min(
+					this.updateInterval.max,
+					this.updateInterval.value * this.updateInterval.factor
+				);
+			}
 		}
 
 		this.inViewPort = this.objIsInViewport();
@@ -193,32 +213,6 @@ export class ObjectGui {
 		} else {
 			return type;
 		}
-	}
-
-	//https://stackoverflow.com/a/30158566/2422125
-	props(obj) {
-		let o = obj;
-		let res = Object.getOwnPropertyNames(o);
-		for (; o != null && o !== Object; o = Object.getPrototypeOf(o)) {
-			let op = Object.getOwnPropertyNames(o);
-			for (let i = 0; i < op.length; i++) {
-				if (res.indexOf(op[i]) == -1 &&
-					Object.getOwnPropertyDescriptor(o, op[i]).get) {
-					res.push(op[i]);
-				}
-			}
-		}
-
-
-		let index = res.indexOf("__proto__");
-		if (index > -1) {
-			//let propStr = Object.getOwnPropertyNames(obj["__proto__"]).join("");
-			if (this.excludeProto || Array.isArray(obj) || obj.__proto__.constructor.name === "Object") {
-				res.splice(index, 1);
-			}
-		}
-
-		return res;
 	}
 
 	startAnimation(callback) {

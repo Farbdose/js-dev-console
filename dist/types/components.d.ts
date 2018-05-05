@@ -5,8 +5,6 @@ import './stencil.core';
  * and imports for stencil collections that might be configured in your stencil.config.js file
  */
 
-import './stencil.core';
-
 declare global {
   namespace JSX {
     interface Element {}
@@ -71,6 +69,7 @@ declare global {
       'obj': any;
       'parent': any;
       'tick': boolean;
+	    'update': () => void;
     }
   }
 
