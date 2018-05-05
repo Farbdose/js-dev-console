@@ -1,4 +1,5 @@
 import { props } from "../utils";
+
 export class JsConsole {
     constructor() {
         this.url = "https://github.com/Farbdose/js-dev-console";
@@ -253,8 +254,10 @@ export class JsConsole {
         this.historyIndex = 0;
         this.elements.textArea.focus();
     }
-    handlePromptClick() {
+
+	handlePromptClick(e) {
         this.showHistory = !this.showHistory;
+		e.preventDefault();
     }
     clear() {
         this.input = "";
@@ -305,7 +308,11 @@ export class JsConsole {
                     h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map((entry, i) => {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
-                h("span", { class: { "prompt": true, "open": this.showHistory }, onClick: (_) => this.handlePromptClick() }, ">"),
+	            h("span", {
+		            class: {"prompt": true, "open": this.showHistory},
+		            onTouchStart: (e) => this.handlePromptClick(e),
+		            onMouseDown: (e) => this.handlePromptClick(e)
+	            }, ">"),
                 h("input", { list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onChange: (event) => this.handleInputChange(event), onKeyDown: (event) => this.handleInputChange(event) }),
                 h("datalist", { id: "completionOptions" }, this.getAutoCompleteOptions(this.input).map((entry) => {
                     return (h("option", { value: entry }));

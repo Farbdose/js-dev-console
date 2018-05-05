@@ -309,8 +309,9 @@ export class JsConsole {
 		this.elements.textArea.focus();
 	}
 
-	handlePromptClick() {
+	handlePromptClick(e: Event) {
 		this.showHistory = !this.showHistory;
+		e.preventDefault();
 	}
 
 	clear() {
@@ -382,7 +383,9 @@ export class JsConsole {
 							})
 						}</div>
 					</div>
-					<span class={{"prompt": true, "open": this.showHistory}} onClick={(_) => this.handlePromptClick()}>&gt;</span>
+					<span class={{"prompt": true, "open": this.showHistory}}
+					      onTouchStart={(e) => this.handlePromptClick(e)}
+					      onMouseDown={(e) => this.handlePromptClick(e)}>&gt;</span>
 					<input
 						list="completionOptions"
 						id="input-area"
