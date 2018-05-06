@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], function (exports, __chunk_1) {
+JsWebConsole.loadBundle('object-gui', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
     var h = window.JsWebConsole.h;
     var ObjectGui = /** @class */ (function () {
         function ObjectGui() {
@@ -137,10 +137,11 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
             return (rect.top >= -rect.height - (pHeight * (marginFactor - 1)) &&
                 rect.top <= rect.height + pHeight * marginFactor);
         };
-        ObjectGui.prototype.expandClick = function () {
+        ObjectGui.prototype.expandClick = function (event) {
             if (ObjectGui.isObject(this.value)) {
                 this.expanded = !this.expanded;
             }
+            event.preventDefault();
         };
         ObjectGui.prototype.getType = function () {
             var val = this.value;
@@ -207,7 +208,7 @@ JsWebConsole.loadBundle('object-gui', ['exports', './chunk-c54478a2.js'], functi
             openingBraket = isFunction ? "(" : openingBraket;
             var closingBraket = isArray ? "]" : "}";
             closingBraket = isFunction ? ")" : closingBraket;
-            var rightValue = (h("span", { class: { 'clickable': isObj && !isFunction }, onClick: function () { return _this.expandClick(); } }, h("span", { class: {
+            var rightValue = (h("span", { class: { 'clickable': isObj && !isFunction }, onMouseDown: function (e) { return _this.expandClick(e); }, onTouchStart: function (e) { return _this.expandClick(e); } }, h("span", { class: {
                     "highlighted": this.highlight,
                     "top": isObj && this.expanded,
                     "highlight": true,

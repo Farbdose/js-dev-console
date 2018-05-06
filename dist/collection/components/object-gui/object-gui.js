@@ -134,10 +134,11 @@ export class ObjectGui {
         return (rect.top >= -rect.height - (pHeight * (marginFactor - 1)) &&
             rect.top <= rect.height + pHeight * marginFactor);
     }
-    expandClick() {
+    expandClick(event) {
         if (ObjectGui.isObject(this.value)) {
             this.expanded = !this.expanded;
         }
+        event.preventDefault();
     }
     getType() {
         let val = this.value;
@@ -203,7 +204,7 @@ export class ObjectGui {
         openingBraket = isFunction ? "(" : openingBraket;
         let closingBraket = isArray ? "]" : "}";
         closingBraket = isFunction ? ")" : closingBraket;
-        let rightValue = (h("span", { class: { 'clickable': isObj && !isFunction }, onClick: () => this.expandClick() },
+        let rightValue = (h("span", { class: { 'clickable': isObj && !isFunction }, onMouseDown: (e) => this.expandClick(e), onTouchStart: (e) => this.expandClick(e) },
             h("span", { class: {
                     "highlighted": this.highlight,
                     "top": isObj && this.expanded,

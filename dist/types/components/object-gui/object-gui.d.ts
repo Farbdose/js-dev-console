@@ -44,7 +44,7 @@ export declare class ObjectGui {
     static isEqual(a: any, b: any): boolean;
     update(): void;
     objIsInViewport(): boolean;
-    expandClick(): void;
+    expandClick(event: Event): void;
     getType(): any;
     startAnimation(callback: any): void;
     clearTimer(timer: any): void;

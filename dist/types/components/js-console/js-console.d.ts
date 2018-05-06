@@ -15,6 +15,7 @@ export declare class JsConsole {
     historyIndex: number;
     input: any;
     rows: number;
+    autoCompleteOptions: Array<string>;
     elements: {
         textArea: HTMLInputElement;
         scrollMarker: HTMLDivElement;
@@ -35,7 +36,7 @@ export declare class JsConsole {
         type: string;
     };
     handleInputChange(event: Event): void;
-    getAutoCompleteOptions(command: string): any[];
+    updateAutoCompleteOptions(): void;
     handleHistoryClick(i: any): void;
     handlePromptClick(event: TouchEvent | MouseEvent): void;
     clear(event?: Event): void;

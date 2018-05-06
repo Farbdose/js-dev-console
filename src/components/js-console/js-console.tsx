@@ -1,5 +1,5 @@
 import { Component, Element, Prop, State } from '@stencil/core';
-import { props } from "../utils";
+import { props, uniq } from "../utils";
 
 @Component({
 	tag: 'js-console',
@@ -43,6 +43,7 @@ export class JsConsole {
 
 	@State() input: any = "";
 	@State() rows: number = 1;
+	@State() autoCompleteOptions: Array<string> = [];
 
 	elements: {
 		textArea: HTMLInputElement,
@@ -155,11 +156,14 @@ export class JsConsole {
 	}
 
 	handleInputChange(event: Event) {
+		//console.info(event);
 		let tArea = this.elements.textArea;
 
-		if (event["key"]  === 'Escape') {
+		if (event["key"] === 'Escape') {
 			this.clear();
-		} else if (event["key"]  === 'ArrowUp') {
+		} else if (event["key"] === 'ArrowUp') {
+			this.autoCompleteOptions = [];
+
 			setTimeout(() => {
 				if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
 					if (this.historyIndex < this.inputs.length - 1) {
@@ -168,7 +172,9 @@ export class JsConsole {
 					}
 				}
 			});
-		} else if (event["key"]  === 'ArrowDown') {
+		} else if (event["key"] === 'ArrowDown') {
+			this.autoCompleteOptions = [];
+
 			setTimeout(() => {
 				if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
 					if (this.historyIndex > 0) {
@@ -223,6 +229,8 @@ export class JsConsole {
 
 
 				this.input = "";
+				this.autoCompleteOptions = [];
+
 				setTimeout(() => {
 					let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
 					if (lastHistChild) {
@@ -231,36 +239,37 @@ export class JsConsole {
 					this.elements.scrollMarker.scrollIntoView(false);
 				}, 100);
 			}
-		} else if (event["key"]  === 'Enter') {
+		} /*else if (event["key"] === 'Enter') {
 			let val = tArea.value;
 			this.input = val.substring(0, tArea.selectionStart) + "\n" + val.substring(tArea.selectionStart);
 			this.rows = Math.ceil((tArea.scrollHeight - 14) / 14) + 1;
 			this.setInputEntry(this.input);
-		} else {
-			event.preventDefault();
+			this.autoCompleteOptions = [];
+		}*/ else {
+			//event.preventDefault();
 			setTimeout(() => {
 				this.input = tArea.value;
 				this.rows = Math.ceil((tArea.scrollHeight - 14) / 14);
 				this.setInputEntry(this.input);
+				this.updateAutoCompleteOptions();
 			});
 		}
 	}
 
-	getAutoCompleteOptions(command: string) {
+	updateAutoCompleteOptions() {
 		//https://regex101.com/r/3fvjJu/10
-		let wrappedCommand = command;
 
 		let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
-		let matches = reg.exec(command);
+		let matches = reg.exec(this.input);
 		let prefix = matches ? matches[1] : undefined;
 		reg.lastIndex = 0;
 
-		this.inputBase = command.replace(reg, "$1");
+		this.inputBase = this.input.replace(reg, "$1");
 		reg.lastIndex = 0;
 
 		if (matches) {
 			matches[2] = "this." + matches[2];
-			wrappedCommand = matches.slice(2).join("");
+			let wrappedCommand = matches.slice(2).join("");
 			matches = reg.exec(wrappedCommand);
 			reg.lastIndex = 0;
 			//console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
@@ -283,25 +292,48 @@ export class JsConsole {
 		}
 
 		if (base && base != "") {
-			res = res ? res.filter((p) => {
-				return prop ? (p.indexOf(prop) == 0) : true;
-			}).map((e) => {
-				base = base.replace(/^this\.?/, "");
-				if (base == "") {
-					matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
-				}
-				return prefix + base + matches[3] + (matches[4] || "") + e;
-			}) : [];
+			if (res) {
+				res = res.filter((p) => {
+					return prop ? (p.indexOf(prop) == 0) : true;
+				});
+
+				res.length = 100;
+
+				res = res.map((e) => {
+					base = base.replace(/^this\.?/, "");
+					if (base == "") {
+						matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
+					}
+					return prefix + base + matches[3] + (matches[4] || "") + e;
+				});
+			} else {
+				res = [];
+			}
 
 		} else {
 			res = res.map((e) => {
-				return (prefix || command) + e.replace(/^this\.?/, "");
+				return (prefix || this.input) + e.replace(/^this\.?/, "");
 			});
 		}
 
-		res.length = 100;
+		res.sort();
 
-		return res;// ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
+		let hist = this.inputs.slice(0, -1);
+		if (hist) {
+			hist = hist.filter((p) => {
+				return p.indexOf(this.input) == 0;
+			});
+			res = uniq(hist.concat(res));
+		}
+
+		let index = res.indexOf(this.input);
+		if (index != -1) {
+			res.splice(index, 1);
+		}
+
+		//console.info(res);
+
+		this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
 	}
 
 	handleHistoryClick(i) {
@@ -392,16 +424,18 @@ export class JsConsole {
 					      onTouchStart={(e) => this.handlePromptClick(e)}
 					      onMouseDown={(e) => this.handlePromptClick(e)}>&gt;</span>
 					<input
+						autoCapitalize="off"
+						autoCorrect="off"
+						autoComplete="off"
 						list="completionOptions"
 						id="input-area"
 						class="input-area"
 						spellCheck={false}
 						value={this.input}
-						onChange={(event) => this.handleInputChange(event)}
 						onKeyDown={(event) => this.handleInputChange(event)}>
 					</input>
 					<datalist id="completionOptions">
-						{this.getAutoCompleteOptions(this.input).map((entry) => {
+						{this.autoCompleteOptions.map((entry) => {
 							return (<option value={entry}></option>);
 						})}
 					</datalist>

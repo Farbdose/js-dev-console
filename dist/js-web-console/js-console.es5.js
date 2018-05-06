@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], function (exports, __chunk_1) {
+JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
     var h = window.JsWebConsole.h;
     var JsConsole = /** @class */ (function () {
         function JsConsole() {
@@ -28,6 +28,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
             this.historyIndex = 0;
             this.input = "";
             this.rows = 1;
+            this.autoCompleteOptions = [];
             this.inputBase = "";
             this.counter = 0;
             this.log = console.log;
@@ -120,11 +121,13 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
         };
         JsConsole.prototype.handleInputChange = function (event) {
             var _this = this;
+            //console.info(event);
             var tArea = this.elements.textArea;
             if (event["key"] === 'Escape') {
                 this.clear();
             }
             else if (event["key"] === 'ArrowUp') {
+                this.autoCompleteOptions = [];
                 setTimeout(function () {
                     if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
                         if (_this.historyIndex < _this.inputs.length - 1) {
@@ -135,6 +138,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
                 });
             }
             else if (event["key"] === 'ArrowDown') {
+                this.autoCompleteOptions = [];
                 setTimeout(function () {
                     if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
                         if (_this.historyIndex > 0) {
@@ -183,6 +187,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
                     this.outputs = this.outputs.concat([res]);
                     this.inputs = this.inputs.concat([""]);
                     this.input = "";
+                    this.autoCompleteOptions = [];
                     setTimeout(function () {
                         var lastHistChild = _this.elements.history.firstElementChild.lastElementChild;
                         if (lastHistChild) {
@@ -191,34 +196,35 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
                         _this.elements.scrollMarker.scrollIntoView(false);
                     }, 100);
                 }
-            }
-            else if (event["key"] === 'Enter') {
-                var val = tArea.value;
+            } /*else if (event["key"] === 'Enter') {
+                let val = tArea.value;
                 this.input = val.substring(0, tArea.selectionStart) + "\n" + val.substring(tArea.selectionStart);
                 this.rows = Math.ceil((tArea.scrollHeight - 14) / 14) + 1;
                 this.setInputEntry(this.input);
-            }
+                this.autoCompleteOptions = [];
+            }*/
             else {
-                event.preventDefault();
+                //event.preventDefault();
                 setTimeout(function () {
                     _this.input = tArea.value;
                     _this.rows = Math.ceil((tArea.scrollHeight - 14) / 14);
                     _this.setInputEntry(_this.input);
+                    _this.updateAutoCompleteOptions();
                 });
             }
         };
-        JsConsole.prototype.getAutoCompleteOptions = function (command) {
+        JsConsole.prototype.updateAutoCompleteOptions = function () {
+            var _this = this;
             //https://regex101.com/r/3fvjJu/10
-            var wrappedCommand = command;
             var reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
-            var matches = reg.exec(command);
+            var matches = reg.exec(this.input);
             var prefix = matches ? matches[1] : undefined;
             reg.lastIndex = 0;
-            this.inputBase = command.replace(reg, "$1");
+            this.inputBase = this.input.replace(reg, "$1");
             reg.lastIndex = 0;
             if (matches) {
                 matches[2] = "this." + matches[2];
-                wrappedCommand = matches.slice(2).join("");
+                var wrappedCommand = matches.slice(2).join("");
                 matches = reg.exec(wrappedCommand);
                 reg.lastIndex = 0;
                 //console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
@@ -238,23 +244,42 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
             catch (_) {
             }
             if (base && base != "") {
-                res = res ? res.filter(function (p) {
-                    return prop ? (p.indexOf(prop) == 0) : true;
-                }).map(function (e) {
-                    base = base.replace(/^this\.?/, "");
-                    if (base == "") {
-                        matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
-                    }
-                    return prefix + base + matches[3] + (matches[4] || "") + e;
-                }) : [];
+                if (res) {
+                    res = res.filter(function (p) {
+                        return prop ? (p.indexOf(prop) == 0) : true;
+                    });
+                    res.length = 100;
+                    res = res.map(function (e) {
+                        base = base.replace(/^this\.?/, "");
+                        if (base == "") {
+                            matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
+                        }
+                        return prefix + base + matches[3] + (matches[4] || "") + e;
+                    });
+                }
+                else {
+                    res = [];
+                }
             }
             else {
                 res = res.map(function (e) {
-                    return (prefix || command) + e.replace(/^this\.?/, "");
+                    return (prefix || _this.input) + e.replace(/^this\.?/, "");
                 });
             }
-            res.length = 100;
-            return res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
+            res.sort();
+            var hist = this.inputs.slice(0, -1);
+            if (hist) {
+                hist = hist.filter(function (p) {
+                    return p.indexOf(_this.input) == 0;
+                });
+                res = __chunk_1.uniq(hist.concat(res));
+            }
+            var index = res.indexOf(this.input);
+            if (index != -1) {
+                res.splice(index, 1);
+            }
+            //console.info(res);
+            this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
         };
         JsConsole.prototype.handleHistoryClick = function (i) {
             this.input = this.inputs[i];
@@ -300,7 +325,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
                 }
             })), h("div", { class: "bottom-wrapper" }, h("div", { class: "history" }, h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map(function (entry, i) {
                 return (h("span", { onClick: function (_) { return _this.handleHistoryClick(i); } }, entry));
-            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onChange: function (event) { return _this.handleInputChange(event); }, onKeyDown: function (event) { return _this.handleInputChange(event); } }), h("datalist", { id: "completionOptions" }, this.getAutoCompleteOptions(this.input).map(function (entry) {
+            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onKeyDown: function (event) { return _this.handleInputChange(event); } }), h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map(function (entry) {
                 return (h("option", { value: entry }));
             })), h("span", { class: "clear", onTouchStart: function (e) { return _this.clear(e); }, onMouseDown: function (e) { return _this.clear(e); } }, h("span", null, "x"))), h("div", { class: "scroll-marker" })));
         };
@@ -317,6 +342,9 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-c54478a2.js'], functi
         Object.defineProperty(JsConsole, "properties", {
             get: function () {
                 return {
+                    "autoCompleteOptions": {
+                        "state": true
+                    },
                     "el": {
                         "elementRef": true
                     },

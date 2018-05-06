@@ -23,3 +23,17 @@ export function props(obj: any, excludeProto: boolean) {
 
 	return res;
 }
+
+//https://stackoverflow.com/a/9229821/2422125
+export function uniq<T>(a: Array<T>): Array<T> {
+	let prims = {"boolean": {}, "number": {}, "string": {}}, objs = [];
+
+	return a.filter((item) => {
+		let type = typeof item;
+		if (type in prims) {
+			return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
+		} else {
+			return objs.indexOf(item) >= 0 ? false : objs.push(item);
+		}
+	});
+}

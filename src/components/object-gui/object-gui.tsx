@@ -194,10 +194,12 @@ export class ObjectGui {
 		);
 	}
 
-	expandClick() {
+	expandClick(event: Event) {
 		if (ObjectGui.isObject(this.value)) {
 			this.expanded = !this.expanded;
 		}
+
+		event.preventDefault();
 	}
 
 	getType() {
@@ -275,7 +277,9 @@ export class ObjectGui {
 		closingBraket = isFunction ? ")" : closingBraket;
 
 		let rightValue = (
-			<span class={{'clickable': isObj && !isFunction}} onClick={() => this.expandClick()}>
+			<span class={{'clickable': isObj && !isFunction}}
+			      onMouseDown={(e) => this.expandClick(e)}
+			      onTouchStart={(e) => this.expandClick(e)}>
 				<span class={{
 					"highlighted": this.highlight,
 					"top": isObj && this.expanded,
