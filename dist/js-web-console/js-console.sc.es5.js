@@ -120,12 +120,13 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             return i > 0 ? out[i] : undefined;
         };
         JsConsole.prototype.handleKeyboard = function (event) {
-            console.info(event);
+            //console.info(event);
             var tArea = this.elements.textArea;
             //setTimeout(() => {
             //);
             if (event["key"] === 'Escape') {
                 this.clear();
+                event.preventDefault();
             }
             else if (event["key"] === 'ArrowUp') {
                 if (this.historyIndex < this.inputs.length - 1) {
@@ -146,9 +147,6 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                     }
                     event.preventDefault();
                 }
-            }
-            else if (event["key"] === 'Enter') {
-                event.preventDefault();
             }
         };
         JsConsole.prototype.handleSubmit = function () {
@@ -200,8 +198,8 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 }, 100);
             }
         };
-        JsConsole.prototype.promptChange = function (event) {
-            console.info(event);
+        JsConsole.prototype.promptChange = function (_) {
+            //console.info(event);
             this.input = this.elements.textArea.value;
             this.setInputEntry(this.input);
             this.updateAutoCompleteOptions();
@@ -318,7 +316,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 }
             })), h("div", { class: "bottom-wrapper" }, h("div", { class: "history" }, h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map(function (entry, i) {
                 return (h("span", { onClick: function (_) { return _this.handleHistoryClick(i); } }, entry));
-            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: function (event) { return _this.promptChange(event); } }), h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map(function (entry) {
+            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: function (event) { return _this.promptChange(event); }, onKeyDown: function (event) { return _this.handleKeyboard(event); } }), h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map(function (entry) {
                 return (h("option", { value: entry }));
             })), h("span", { class: "clear", onTouchStart: function (e) { return _this.clear(e); }, onMouseDown: function (e) { return _this.clear(e); } }, h("span", null, "\u2715"))), h("div", { class: "scroll-marker" })));
         };

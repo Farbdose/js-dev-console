@@ -114,12 +114,13 @@ export class JsConsole {
         return i > 0 ? out[i] : undefined;
     }
     handleKeyboard(event) {
-        console.info(event);
+        //console.info(event);
         let tArea = this.elements.textArea;
         //setTimeout(() => {
         //);
         if (event["key"] === 'Escape') {
             this.clear();
+            event.preventDefault();
         }
         else if (event["key"] === 'ArrowUp') {
             if (this.historyIndex < this.inputs.length - 1) {
@@ -140,9 +141,6 @@ export class JsConsole {
                 }
                 event.preventDefault();
             }
-        }
-        else if (event["key"] === 'Enter') {
-            event.preventDefault();
         }
     }
     handleSubmit() {
@@ -193,8 +191,8 @@ export class JsConsole {
             }, 100);
         }
     }
-    promptChange(event) {
-        console.info(event);
+    promptChange(_) {
+        //console.info(event);
         this.input = this.elements.textArea.value;
         this.setInputEntry(this.input);
         this.updateAutoCompleteOptions();
@@ -328,7 +326,7 @@ export class JsConsole {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
                 h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
-                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event) }),
+                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
                 h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map((entry) => {
                     return (h("option", { value: entry }));
                 })),

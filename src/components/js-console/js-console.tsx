@@ -156,7 +156,7 @@ export class JsConsole {
 	}
 
 	handleKeyboard(event: Event) {
-		console.info(event);
+		//console.info(event);
 		let tArea = this.elements.textArea;
 		//setTimeout(() => {
 
@@ -164,6 +164,7 @@ export class JsConsole {
 
 		if (event["key"] === 'Escape') {
 			this.clear();
+			event.preventDefault();
 		} else if (event["key"] === 'ArrowUp') {
 			if (this.historyIndex < this.inputs.length - 1) {
 				this.autoCompleteOptions = [];
@@ -187,11 +188,6 @@ export class JsConsole {
 
 				event.preventDefault();
 			}
-		}
-		else if (event["key"] === 'Enter') {
-			event.preventDefault();
-
-
 		}
 	}
 
@@ -250,8 +246,8 @@ export class JsConsole {
 		}
 	}
 
-	promptChange(event: Event) {
-		console.info(event);
+	promptChange(_: Event) {
+		//console.info(event);
 
 		this.input = this.elements.textArea.value;
 		this.setInputEntry(this.input);
@@ -434,7 +430,8 @@ export class JsConsole {
 						class="input-area"
 						spellCheck={false}
 						value={this.input}
-						onInput={(event) => this.promptChange(event)}>
+						onInput={(event) => this.promptChange(event)}
+						onKeyDown={(event) => this.handleKeyboard(event)}>
 					</input>
 					<datalist id="completionOptions">
 						{this.autoCompleteOptions.map((entry) => {

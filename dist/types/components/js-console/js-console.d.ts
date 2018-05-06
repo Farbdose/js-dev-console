@@ -37,7 +37,7 @@ export declare class JsConsole {
     };
     handleKeyboard(event: Event): void;
     handleSubmit(): void;
-    promptChange(event: Event): void;
+    promptChange(_: Event): void;
     updateAutoCompleteOptions(): void;
     handleHistoryClick(i: any): void;
     handlePromptClick(event: TouchEvent | MouseEvent): void;
