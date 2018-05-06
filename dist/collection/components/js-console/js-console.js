@@ -113,98 +113,91 @@ export class JsConsole {
         let i = out.length - this.historyIndex;
         return i > 0 ? out[i] : undefined;
     }
-    handleInputChange(event) {
-        //console.info(event);
+    handleKeyboard(event) {
+        console.info(event);
         let tArea = this.elements.textArea;
+        //setTimeout(() => {
+        //);
         if (event["key"] === 'Escape') {
             this.clear();
         }
         else if (event["key"] === 'ArrowUp') {
-            this.autoCompleteOptions = [];
-            setTimeout(() => {
+            if (this.historyIndex < this.inputs.length - 1) {
+                this.autoCompleteOptions = [];
                 if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
-                    if (this.historyIndex < this.inputs.length - 1) {
-                        this.historyIndex += 1;
-                        this.input = this.getInputEntry();
-                    }
+                    this.historyIndex += 1;
+                    this.input = this.getInputEntry();
                 }
-            });
+                event.preventDefault();
+            }
         }
         else if (event["key"] === 'ArrowDown') {
-            this.autoCompleteOptions = [];
-            setTimeout(() => {
-                if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
-                    if (this.historyIndex > 0) {
-                        this.historyIndex -= 1;
-                        this.input = this.getInputEntry();
-                    }
-                }
-            });
-        }
-        else if (event["key"] === 'Enter' && !event["shiftKey"]) {
-            event.preventDefault();
-            if (this.input.trim().length > 0) {
-                this.log("Evalutating: ", this.input);
-                let command = this.input;
-                command = command.replace(/(^|[^a-zA-Z])let /g, "$1var ");
-                if (/^\s*\{/.test(command) && /\}\s*$/.test(command)) {
-                    command = "(" + command + ")";
-                }
-                let res = {
-                    command: command,
-                    value: undefined,
-                    type: ""
-                };
-                try {
-                    res.value = (function () {
-                        return eval.apply(this, [command]);
-                    }());
-                    if (!res.value) {
-                        res.value = command;
-                        res.type = "simple";
-                    }
-                    else {
-                        res.type = "object";
-                    }
-                }
-                catch (e) {
-                    res.type = "error";
-                    res.value = e.stack;
-                    this.log(e);
-                }
-                this.log("Output", res);
-                let oldOutEntry = this.getOutputEntry();
-                this.setInputEntry(oldOutEntry ? oldOutEntry.command : command);
-                this.historyIndex = 0;
-                this.setInputEntry(res.command);
-                this.outputs = [...this.outputs, res];
-                this.inputs = [...this.inputs, ""];
-                this.input = "";
+            if (this.historyIndex > 0) {
                 this.autoCompleteOptions = [];
-                setTimeout(() => {
-                    let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
-                    if (lastHistChild) {
-                        lastHistChild.scrollIntoView(false);
-                    }
-                    this.elements.scrollMarker.scrollIntoView(false);
-                }, 100);
+                if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
+                    this.historyIndex -= 1;
+                    this.input = this.getInputEntry();
+                }
+                event.preventDefault();
             }
-        } /*else if (event["key"] === 'Enter') {
-            let val = tArea.value;
-            this.input = val.substring(0, tArea.selectionStart) + "\n" + val.substring(tArea.selectionStart);
-            this.rows = Math.ceil((tArea.scrollHeight - 14) / 14) + 1;
-            this.setInputEntry(this.input);
-            this.autoCompleteOptions = [];
-        }*/
-        else {
-            //event.preventDefault();
-            setTimeout(() => {
-                this.input = tArea.value;
-                this.rows = Math.ceil((tArea.scrollHeight - 14) / 14);
-                this.setInputEntry(this.input);
-                this.updateAutoCompleteOptions();
-            });
         }
+        else if (event["key"] === 'Enter') {
+            event.preventDefault();
+        }
+    }
+    handleSubmit() {
+        if (this.input.trim().length > 0) {
+            this.log("Evalutating: ", this.input);
+            let command = this.input;
+            command = command.replace(/(^|[^a-zA-Z])let /g, "$1var ");
+            if (/^\s*\{/.test(command) && /\}\s*$/.test(command)) {
+                command = "(" + command + ")";
+            }
+            let res = {
+                command: command,
+                value: undefined,
+                type: ""
+            };
+            try {
+                res.value = (function () {
+                    return eval.apply(this, [command]);
+                }());
+                if (!res.value) {
+                    res.value = command;
+                    res.type = "simple";
+                }
+                else {
+                    res.type = "object";
+                }
+            }
+            catch (e) {
+                res.type = "error";
+                res.value = e.stack;
+                this.log(e);
+            }
+            this.log("Output", res);
+            let oldOutEntry = this.getOutputEntry();
+            this.setInputEntry(oldOutEntry ? oldOutEntry.command : command);
+            this.historyIndex = 0;
+            this.setInputEntry(res.command);
+            this.outputs = [...this.outputs, res];
+            this.inputs = [...this.inputs, ""];
+            this.input = "";
+            this.autoCompleteOptions = [];
+            setTimeout(() => {
+                let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
+                if (lastHistChild) {
+                    lastHistChild.scrollIntoView(false);
+                }
+                this.elements.scrollMarker.scrollIntoView(false);
+            }, 100);
+        }
+    }
+    promptChange(event) {
+        console.info(event);
+        this.input = this.elements.textArea.value;
+        this.setInputEntry(this.input);
+        this.updateAutoCompleteOptions();
     }
     updateAutoCompleteOptions() {
         //https://regex101.com/r/3fvjJu/10
@@ -293,7 +286,7 @@ export class JsConsole {
         }
     }
     render() {
-        return (h("div", null,
+        return (h("form", { onSubmit: (_) => this.handleSubmit(), action: "javascript:void(0);" },
             h("div", { class: "url" },
                 h("a", { href: this.url }, "Github")),
             h("div", { class: "scroll-mask" },
@@ -335,12 +328,12 @@ export class JsConsole {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
                 h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
-                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onKeyDown: (event) => this.handleInputChange(event) }),
+                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event) }),
                 h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map((entry) => {
                     return (h("option", { value: entry }));
                 })),
                 h("span", { class: "clear", onTouchStart: (e) => this.clear(e), onMouseDown: (e) => this.clear(e) },
-                    h("span", null, "x"))),
+                    h("span", null, "\u2715"))),
             h("div", { class: "scroll-marker" })));
     }
     static get is() { return "js-console"; }
