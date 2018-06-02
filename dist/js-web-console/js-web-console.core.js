@@ -531,7 +531,10 @@ s=document.querySelector("script[data-namespace='js-web-console']");if(s){resour
         plt.activeRender = true;
         const vnodeChildren = instance.render && instance.render();
         let vnodeHostData;
-        false;
+        true;
+        // user component provided a "hostData()" method
+        // the returned data/attributes are used on the host element
+        vnodeHostData = instance.hostData && instance.hostData();
         false;
         // tell the platform we're done rendering
         // now any changes will again queue

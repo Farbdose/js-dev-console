@@ -45,6 +45,8 @@ export class JsConsole {
 	@State() rows: number = 1;
 	@State() autoCompleteOptions: Array<string> = [];
 
+	@Prop({ mutable: true }) fixed: boolean = true;
+
 	elements: {
 		textArea: HTMLInputElement,
 		scrollMarker: HTMLDivElement,
@@ -357,6 +359,12 @@ export class JsConsole {
 		if (event) {
 			event.preventDefault();
 		}
+	}
+
+	hostData() {
+		return {
+			class: {fixed: this.fixed}
+		};
 	}
 
 	render() {

@@ -1,4 +1,6 @@
 import '../../stencil.core';
+import '../../stencil.core';
+import '../../stencil.core';
 export declare class JsConsole {
     url: string;
     first: string;
@@ -16,6 +18,7 @@ export declare class JsConsole {
     input: any;
     rows: number;
     autoCompleteOptions: Array<string>;
+    fixed: boolean;
     elements: {
         textArea: HTMLInputElement;
         scrollMarker: HTMLDivElement;
@@ -42,5 +45,10 @@ export declare class JsConsole {
     handleHistoryClick(i: any): void;
     handlePromptClick(event: TouchEvent | MouseEvent): void;
     clear(event?: Event): void;
+    hostData(): {
+        class: {
+            fixed: boolean;
+        };
+    };
     render(): JSX.Element;
 }

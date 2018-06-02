@@ -1,9 +1,26 @@
+:host(.fixed) {
+  width: unset;
+  left: 0;
+  right: -1px;
+  bottom: 0;
+  max-height: 30vh;
+  position: fixed; }
+  :host(.fixed) form, :host(.fixed) .entries {
+    min-height: 100%; }
+  :host(.fixed) .bottom-wrapper {
+    margin-bottom: 2px; }
+
 :host {
   width: 100%;
+  max-height: 100%;
   position: absolute;
   font-family: Consolas, monospace;
   font-size: 11px;
-  visibility: visible; }
+  visibility: visible;
+  border: 1px solid lightgrey;
+  overflow-y: auto;
+  background-color: rgba(255, 255, 255, 0.85);
+  opacity: 0.8; }
   @media (max-width: 700px) {
     :host {
       font-size: 100%; } }
@@ -64,7 +81,8 @@
     background-color: white;
     margin-top: -1px;
     border-top: 1px solid lightgrey;
-    height: calc(1rem + 5px); }
+    height: calc(1rem + 5px);
+    width: 100%; }
     :host .bottom-wrapper .clear {
       font-size: 14px;
       user-select: none;

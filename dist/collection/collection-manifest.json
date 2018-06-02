@@ -21,6 +21,12 @@
           "attr": "first"
         },
         {
+          "name": "fixed",
+          "type": "Boolean",
+          "mutable": true,
+          "attr": "fixed"
+        },
+        {
           "name": "last",
           "type": "String",
           "attr": "last"

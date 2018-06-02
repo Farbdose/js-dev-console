@@ -26,6 +26,7 @@ export class JsConsole {
         this.input = "";
         this.rows = 1;
         this.autoCompleteOptions = [];
+        this.fixed = true;
         this.inputBase = "";
         this.counter = 0;
         this.log = console.log;
@@ -283,6 +284,11 @@ export class JsConsole {
             event.preventDefault();
         }
     }
+    hostData() {
+        return {
+            class: { fixed: this.fixed }
+        };
+    }
     render() {
         return (h("form", { onSubmit: (_) => this.handleSubmit(), action: "javascript:void(0);" },
             h("div", { class: "url" },
@@ -346,6 +352,11 @@ export class JsConsole {
         "first": {
             "type": String,
             "attr": "first"
+        },
+        "fixed": {
+            "type": Boolean,
+            "attr": "fixed",
+            "mutable": true
         },
         "historyIndex": {
             "state": true

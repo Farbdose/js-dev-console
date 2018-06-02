@@ -29,6 +29,7 @@ declare global {
   namespace StencilComponents {
     interface JsConsole {
       'first': string;
+      'fixed': boolean;
       'last': string;
     }
   }
@@ -53,6 +54,7 @@ declare global {
   namespace JSXElements {
     export interface JsConsoleAttributes extends HTMLAttributes {
       'first'?: string;
+      'fixed'?: boolean;
       'last'?: string;
     }
   }
