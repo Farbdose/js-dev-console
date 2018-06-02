@@ -16,6 +16,12 @@
       },
       "props": [
         {
+          "name": "display",
+          "type": "Boolean",
+          "mutable": true,
+          "attr": "display"
+        },
+        {
           "name": "first",
           "type": "String",
           "attr": "first"
@@ -30,6 +36,14 @@
           "name": "last",
           "type": "String",
           "attr": "last"
+        },
+        {
+          "name": "openOnPattern",
+          "type": "String",
+          "attr": "open-on-pattern",
+          "watch": [
+            "watchHandler"
+          ]
         }
       ],
       "states": [

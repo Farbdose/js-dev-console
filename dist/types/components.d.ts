@@ -29,9 +29,11 @@ declare global {
 
   namespace StencilComponents {
     interface JsConsole {
+      'display': boolean;
       'first': string;
       'fixed': boolean;
       'last': string;
+      'openOnPattern': string;
     }
   }
 
@@ -54,9 +56,11 @@ declare global {
   }
   namespace JSXElements {
     export interface JsConsoleAttributes extends HTMLAttributes {
+      'display'?: boolean;
       'first'?: string;
       'fixed'?: boolean;
       'last'?: string;
+      'openOnPattern'?: string;
     }
   }
 }

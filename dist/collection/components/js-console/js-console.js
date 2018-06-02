@@ -2,6 +2,8 @@ import { props, uniq } from "../utils";
 export class JsConsole {
     constructor() {
         this.url = "https://github.com/Farbdose/js-dev-console";
+        this.openOnPattern = null; //null, resize
+        this.patternListeners = {};
         this.showHistory = false;
         this.test = {
             a: NaN,
@@ -26,9 +28,11 @@ export class JsConsole {
         this.input = "";
         this.rows = 1;
         this.autoCompleteOptions = [];
-        this.fixed = true;
+        this.fixed = false;
+        this.display = false;
         this.inputBase = "";
         this.counter = 0;
+        this.horizontal = true;
         this.log = console.log;
         this.log = () => {
         };
@@ -50,13 +54,8 @@ export class JsConsole {
             this.log(args);
             this.handleConsoleEvent(args);
         });
-        /*setTimeout(() => {
-            throw "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\na\na";
-        }, 300);
-
-        setTimeout(() => {
-            throw "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nb\nb";
-        }, 300);*/
+        this.updateOrientation();
+        this.handleOnPatternChange("resize");
     }
     proxy(context, method, name, handler) {
         return function () {
@@ -66,6 +65,51 @@ export class JsConsole {
                 method.apply(context, args);
             }
         };
+    }
+    watchHandler(newValue, oldValue) {
+        if (newValue != oldValue) {
+            this.handleOnPatternChange(newValue);
+        }
+    }
+    handleOnPatternChange(newValue) {
+        let l = this.patternListeners;
+        if (newValue == "resize" && !(l.resize && l.resize.listener)) {
+            l.resize = {
+                listener: window.addEventListener("resize", () => {
+                    if (this.updateOrientation()) {
+                        let time = Math.floor(Date.now() / 1000);
+                        console.info("Unlocking debug mode: " + (l.resize.counter + 1) + "/" + l.resize.target);
+                        let diff = Math.abs(time - l.resize.lastChange);
+                        if (diff >= 4 && diff <= 6) {
+                            l.resize.counter += 1;
+                            if (l.resize.counter == l.resize.target) {
+                                this.display = true;
+                                l.resize.counter = 0;
+                                l.resize.target = 2;
+                            }
+                        }
+                        else {
+                            l.resize.counter = 0;
+                        }
+                        l.resize.lastChange = time;
+                    }
+                }),
+                counter: 0,
+                target: 5,
+                lastChange: 0
+            };
+        }
+        else {
+            if (l && l.resize && l.resize.listener) {
+                window.removeEventListener("resize", l.resize.listener);
+            }
+        }
+    }
+    updateOrientation() {
+        let oldValue = this.horizontal;
+        let newValue = window.innerWidth > window.innerHeight;
+        this.horizontal = newValue;
+        return oldValue != newValue;
     }
     componentDidLoad() {
         let r = this.el.shadowRoot;
@@ -115,10 +159,7 @@ export class JsConsole {
         return i > 0 ? out[i] : undefined;
     }
     handleKeyboard(event) {
-        //console.info(event);
         let tArea = this.elements.textArea;
-        //setTimeout(() => {
-        //);
         if (event["key"] === 'Escape') {
             this.clear();
             event.preventDefault();
@@ -193,7 +234,6 @@ export class JsConsole {
         }
     }
     promptChange(_) {
-        //console.info(event);
         this.input = this.elements.textArea.value;
         this.setInputEntry(this.input);
         this.updateAutoCompleteOptions();
@@ -262,7 +302,6 @@ export class JsConsole {
         if (index != -1) {
             res.splice(index, 1);
         }
-        //console.info(res);
         this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
     }
     handleHistoryClick(i) {
@@ -276,6 +315,9 @@ export class JsConsole {
     }
     clear(event) {
         this.input = "";
+        if (this.outputs.length + this.inputs.length == 0) {
+            this.display = false;
+        }
         if (this.outputs.length == 0) {
             this.inputs = [];
         }
@@ -286,7 +328,8 @@ export class JsConsole {
     }
     hostData() {
         return {
-            class: { fixed: this.fixed }
+            class: { fixed: this.fixed },
+            style: { display: this.display ? "block" : "none" }
         };
     }
     render() {
@@ -346,6 +389,11 @@ export class JsConsole {
         "autoCompleteOptions": {
             "state": true
         },
+        "display": {
+            "type": Boolean,
+            "attr": "display",
+            "mutable": true
+        },
         "el": {
             "elementRef": true
         },
@@ -370,6 +418,11 @@ export class JsConsole {
         "last": {
             "type": String,
             "attr": "last"
+        },
+        "openOnPattern": {
+            "type": String,
+            "attr": "open-on-pattern",
+            "watchCallbacks": ["watchHandler"]
         },
         "outputs": {
             "state": true

@@ -1,4 +1,4 @@
-import { Component, Element, Prop, State } from '@stencil/core';
+import { Component, Element, Prop, State, Watch } from '@stencil/core';
 import { props, uniq } from "../utils";
 
 @Component({
@@ -12,6 +12,8 @@ export class JsConsole {
 
 	@Prop() first: string;
 	@Prop() last: string;
+	@Prop() openOnPattern: string = null; //null, resize
+	private patternListeners: any = {};
 
 	@State() showHistory: boolean = false;
 	@State() test: any = {
@@ -45,7 +47,8 @@ export class JsConsole {
 	@State() rows: number = 1;
 	@State() autoCompleteOptions: Array<string> = [];
 
-	@Prop({ mutable: true }) fixed: boolean = true;
+	@Prop({ mutable: true }) fixed: boolean = false;
+	@Prop({ mutable: true }) display: boolean = false;
 
 	elements: {
 		textArea: HTMLInputElement,
@@ -56,6 +59,7 @@ export class JsConsole {
 	inputBase = "";
 	counter: number = 0;
 	log: any;
+	horizontal: boolean = true;
 
 	proxy(context, method, name, handler) {
 		return function () {
@@ -95,13 +99,57 @@ export class JsConsole {
 			this.handleConsoleEvent(args);
 		});
 
-		/*setTimeout(() => {
-			throw "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\na\na";
-		}, 300);
+		this.updateOrientation();
+		this.handleOnPatternChange("resize");
+	}
 
-		setTimeout(() => {
-			throw "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nb\nb";
-		}, 300);*/
+	@Watch('openOnPattern')
+	watchHandler(newValue: string, oldValue: string) {
+		if (newValue != oldValue) {
+			this.handleOnPatternChange(newValue);
+		}
+	}
+
+	handleOnPatternChange(newValue: string) {
+		let l = this.patternListeners;
+		if (newValue == "resize" && !(l.resize && l.resize.listener)) {
+			l.resize = {
+				listener: window.addEventListener("resize", () => {
+					if (this.updateOrientation()) {
+						let time = Math.floor(Date.now() / 1000);
+						console.info("Unlocking debug mode: " + (l.resize.counter + 1) + "/" + l.resize.target);
+
+						let diff = Math.abs(time - l.resize.lastChange);
+						if (diff >= 4 && diff <= 6) {
+							l.resize.counter += 1;
+							if (l.resize.counter == l.resize.target) {
+								this.display = true;
+								l.resize.counter = 0;
+								l.resize.target = 2;
+							}
+						} else {
+							l.resize.counter = 0;
+						}
+
+						l.resize.lastChange = time;
+					}
+				}),
+				counter: 0,
+				target: 5,
+				lastChange: 0
+			};
+		} else {
+			if (l && l.resize && l.resize.listener) {
+				window.removeEventListener("resize", l.resize.listener);
+			}
+		}
+	}
+
+	updateOrientation(): boolean {
+		let oldValue = this.horizontal;
+		let newValue = window.innerWidth > window.innerHeight;
+		this.horizontal = newValue;
+		return oldValue != newValue;
 	}
 
 	componentDidLoad() {
@@ -158,11 +206,7 @@ export class JsConsole {
 	}
 
 	handleKeyboard(event: Event) {
-		//console.info(event);
 		let tArea = this.elements.textArea;
-		//setTimeout(() => {
-
-		//);
 
 		if (event["key"] === 'Escape') {
 			this.clear();
@@ -249,8 +293,6 @@ export class JsConsole {
 	}
 
 	promptChange(_: Event) {
-		//console.info(event);
-
 		this.input = this.elements.textArea.value;
 		this.setInputEntry(this.input);
 		this.updateAutoCompleteOptions();
@@ -331,8 +373,6 @@ export class JsConsole {
 			res.splice(index, 1);
 		}
 
-		//console.info(res);
-
 		this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
 	}
 
@@ -350,6 +390,10 @@ export class JsConsole {
 	clear(event?: Event) {
 		this.input = "";
 
+		if (this.outputs.length + this.inputs.length == 0) {
+			this.display = false;
+		}
+
 		if (this.outputs.length == 0) {
 			this.inputs = [];
 		}
@@ -363,7 +407,8 @@ export class JsConsole {
 
 	hostData() {
 		return {
-			class: {fixed: this.fixed}
+			class: {fixed: this.fixed},
+			style: {display: this.display ? "block" : "none"}
 		};
 	}
 

@@ -5,6 +5,8 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         function JsConsole() {
             var _this = this;
             this.url = "https://github.com/Farbdose/js-dev-console";
+            this.openOnPattern = null; //null, resize
+            this.patternListeners = {};
             this.showHistory = false;
             this.test = {
                 a: NaN,
@@ -29,9 +31,11 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             this.input = "";
             this.rows = 1;
             this.autoCompleteOptions = [];
-            this.fixed = true;
+            this.fixed = false;
+            this.display = false;
             this.inputBase = "";
             this.counter = 0;
+            this.horizontal = true;
             this.log = console.log;
             this.log = function () {
             };
@@ -56,13 +60,8 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 _this.log(args);
                 _this.handleConsoleEvent(args);
             });
-            /*setTimeout(() => {
-                throw "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\na\na";
-            }, 300);
-
-            setTimeout(() => {
-                throw "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nb\nb";
-            }, 300);*/
+            this.updateOrientation();
+            this.handleOnPatternChange("resize");
         }
         JsConsole.prototype.proxy = function (context, method, name, handler) {
             return function () {
@@ -72,6 +71,52 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                     method.apply(context, args);
                 }
             };
+        };
+        JsConsole.prototype.watchHandler = function (newValue, oldValue) {
+            if (newValue != oldValue) {
+                this.handleOnPatternChange(newValue);
+            }
+        };
+        JsConsole.prototype.handleOnPatternChange = function (newValue) {
+            var _this = this;
+            var l = this.patternListeners;
+            if (newValue == "resize" && !(l.resize && l.resize.listener)) {
+                l.resize = {
+                    listener: window.addEventListener("resize", function () {
+                        if (_this.updateOrientation()) {
+                            var time = Math.floor(Date.now() / 1000);
+                            console.info("Unlocking debug mode: " + (l.resize.counter + 1) + "/" + l.resize.target);
+                            var diff = Math.abs(time - l.resize.lastChange);
+                            if (diff >= 4 && diff <= 6) {
+                                l.resize.counter += 1;
+                                if (l.resize.counter == l.resize.target) {
+                                    _this.display = true;
+                                    l.resize.counter = 0;
+                                    l.resize.target = 2;
+                                }
+                            }
+                            else {
+                                l.resize.counter = 0;
+                            }
+                            l.resize.lastChange = time;
+                        }
+                    }),
+                    counter: 0,
+                    target: 5,
+                    lastChange: 0
+                };
+            }
+            else {
+                if (l && l.resize && l.resize.listener) {
+                    window.removeEventListener("resize", l.resize.listener);
+                }
+            }
+        };
+        JsConsole.prototype.updateOrientation = function () {
+            var oldValue = this.horizontal;
+            var newValue = window.innerWidth > window.innerHeight;
+            this.horizontal = newValue;
+            return oldValue != newValue;
         };
         JsConsole.prototype.componentDidLoad = function () {
             var r = this.el.shadowRoot;
@@ -121,10 +166,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             return i > 0 ? out[i] : undefined;
         };
         JsConsole.prototype.handleKeyboard = function (event) {
-            //console.info(event);
             var tArea = this.elements.textArea;
-            //setTimeout(() => {
-            //);
             if (event["key"] === 'Escape') {
                 this.clear();
                 event.preventDefault();
@@ -200,7 +242,6 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             }
         };
         JsConsole.prototype.promptChange = function (_) {
-            //console.info(event);
             this.input = this.elements.textArea.value;
             this.setInputEntry(this.input);
             this.updateAutoCompleteOptions();
@@ -270,7 +311,6 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             if (index != -1) {
                 res.splice(index, 1);
             }
-            //console.info(res);
             this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
         };
         JsConsole.prototype.handleHistoryClick = function (i) {
@@ -284,6 +324,9 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         };
         JsConsole.prototype.clear = function (event) {
             this.input = "";
+            if (this.outputs.length + this.inputs.length == 0) {
+                this.display = false;
+            }
             if (this.outputs.length == 0) {
                 this.inputs = [];
             }
@@ -294,7 +337,8 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         };
         JsConsole.prototype.hostData = function () {
             return {
-                class: { fixed: this.fixed }
+                class: { fixed: this.fixed },
+                style: { display: this.display ? "block" : "none" }
             };
         };
         JsConsole.prototype.render = function () {
@@ -342,6 +386,11 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                     "autoCompleteOptions": {
                         "state": true
                     },
+                    "display": {
+                        "type": Boolean,
+                        "attr": "display",
+                        "mutable": true
+                    },
                     "el": {
                         "elementRef": true
                     },
@@ -367,6 +416,11 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                         "type": String,
                         "attr": "last"
                     },
+                    "openOnPattern": {
+                        "type": String,
+                        "attr": "open-on-pattern",
+                        "watchCallbacks": ["watchHandler"]
+                    },
                     "outputs": {
                         "state": true
                     },
@@ -385,7 +439,7 @@ JsWebConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             configurable: true
         });
         Object.defineProperty(JsConsole, "style", {
-            get: function () { return ".fixed[data-js-console-host] {\n  width: unset;\n  left: 0;\n  right: -1px;\n  bottom: 0;\n  max-height: 30vh;\n  position: fixed; }\n  .fixed[data-js-console-host]   form[data-js-console], .fixed[data-js-console-host]   .entries[data-js-console] {\n    min-height: 100%; }\n  .fixed[data-js-console-host]   .bottom-wrapper[data-js-console] {\n    margin-bottom: 2px; }\n\n[data-js-console-host] {\n  width: 100%;\n  max-height: 100%;\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible;\n  border: 1px solid lightgrey;\n  overflow-y: auto;\n  background-color: rgba(255, 255, 255, 0.85);\n  opacity: 0.8; }\n  \@media (max-width: 700px) {\n    [data-js-console-host] {\n      font-size: 100%; } }\n  [data-js-console-host]   .url[data-js-console] {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  [data-js-console-host]   .scroll-mask[data-js-console] {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  [data-js-console-host]   .scroll[data-js-console] {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      [data-js-console-host]   .scroll[data-js-console]::-webkit-scrollbar {\n        display: none; } }\n  [data-js-console-host]   .entries[data-js-console] {\n    overflow: hidden; }\n  [data-js-console-host]   .output[data-js-console] {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    [data-js-console-host]   .output.log[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.info[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.warn[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.debug[data-js-console]    > span[data-js-console]:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    [data-js-console-host]   .output.info[data-js-console] {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    [data-js-console-host]   .output.warn[data-js-console] {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    [data-js-console-host]   .output.debug[data-js-console] {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    [data-js-console-host]   .output.error[data-js-console] {\n      white-space: pre;\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n  [data-js-console-host]   .bottom-wrapper[data-js-console] {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    height: calc(1rem + 5px);\n    width: 100%; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console] {\n      font-size: 14px;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      \@media (min-width: 700px) {\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console] {\n          -webkit-transform: scale(0.9);\n          transform: scale(0.9); } }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console]   span[data-js-console] {\n        width: 16px;\n        height: 16px;\n        display: table-cell;\n        text-align: center;\n        vertical-align: middle;\n        -webkit-transform: translateY(-1px);\n        transform: translateY(-1px); }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console], [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console] {\n      font-size: 1rem;\n      line-height: 1rem;\n      height: 1rem; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console] {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console] {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup.open[data-js-console] {\n          opacity: 1; }\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console]   span[data-js-console] {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console]   span[data-js-console]:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console] {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console]:focus {\n        outline: none !important; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt[data-js-console] {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 1.2rem;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      \@media (max-width: 700px) {\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt[data-js-console] {\n          font-size: 120%; } }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt.open[data-js-console] {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }"; },
+            get: function () { return ".fixed[data-js-console-host] {\n  width: unset;\n  left: 0;\n  right: -1px;\n  bottom: 0;\n  max-height: 30vh;\n  position: fixed; }\n  .fixed[data-js-console-host]   form[data-js-console], .fixed[data-js-console-host]   .entries[data-js-console] {\n    min-height: 100%; }\n\n[data-js-console-host] {\n  width: calc(100% - 2px);\n  max-height: calc(100% - 2px);\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible;\n  border: 1px solid lightgrey;\n  overflow-y: auto;\n  background-color: rgba(255, 255, 255, 0.85);\n  opacity: 0.8; }\n  \@media (max-width: 700px) {\n    [data-js-console-host] {\n      font-size: 100%; } }\n  [data-js-console-host]   .url[data-js-console] {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  [data-js-console-host]   .scroll-mask[data-js-console] {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  [data-js-console-host]   .scroll[data-js-console] {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      [data-js-console-host]   .scroll[data-js-console] {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      [data-js-console-host]   .scroll[data-js-console]::-webkit-scrollbar {\n        display: none; } }\n  [data-js-console-host]   .entries[data-js-console] {\n    overflow: hidden; }\n  [data-js-console-host]   .output[data-js-console] {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    [data-js-console-host]   .output.log[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.info[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.warn[data-js-console]    > span[data-js-console]:not(:last-child), [data-js-console-host]   .output.debug[data-js-console]    > span[data-js-console]:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    [data-js-console-host]   .output.info[data-js-console] {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    [data-js-console-host]   .output.warn[data-js-console] {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    [data-js-console-host]   .output.debug[data-js-console] {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    [data-js-console-host]   .output.error[data-js-console] {\n      white-space: pre;\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n  [data-js-console-host]   .bottom-wrapper[data-js-console] {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    margin-bottom: 2px;\n    height: calc(1rem + 5px);\n    width: 100%; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console] {\n      font-size: 14px;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      \@media (min-width: 700px) {\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console] {\n          -webkit-transform: scale(0.9);\n          transform: scale(0.9); } }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .clear[data-js-console]   span[data-js-console] {\n        width: 16px;\n        height: 16px;\n        display: table-cell;\n        text-align: center;\n        vertical-align: middle;\n        -webkit-transform: translateY(-1px);\n        transform: translateY(-1px); }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console], [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console] {\n      font-size: 1rem;\n      line-height: 1rem;\n      height: 1rem; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console] {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console] {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup.open[data-js-console] {\n          opacity: 1; }\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console]   span[data-js-console] {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          [data-js-console-host]   .bottom-wrapper[data-js-console]   .history[data-js-console]   .popup[data-js-console]   span[data-js-console]:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console] {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .input-area[data-js-console]:focus {\n        outline: none !important; }\n    [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt[data-js-console] {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 1.2rem;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      \@media (max-width: 700px) {\n        [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt[data-js-console] {\n          font-size: 120%; } }\n      [data-js-console-host]   .bottom-wrapper[data-js-console]   .prompt.open[data-js-console] {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }"; },
             enumerable: true,
             configurable: true
         });

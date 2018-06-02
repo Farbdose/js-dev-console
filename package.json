@@ -1,6 +1,6 @@
 {
 	"name": "js-web-console",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "JS Web Console",
 	"main": "dist/js-web-console.js",
 	"types": "dist/types/components.d.ts",
