@@ -2,7 +2,7 @@
 	"name": "js-dev-console",
 	"version": "0.0.2",
 	"description": "JS Dev Console",
-	"main": "dist/js-web-console.js",
+	"main": "dist/js-dev-console.js",
 	"types": "dist/types/components.d.ts",
 	"collection": "dist/collection/collection-manifest.json",
 	"files": [

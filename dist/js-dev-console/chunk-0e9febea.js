@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-const { h } = window.JsWebConsole;
+const { h } = window.JsDevConsole;
 
 //https://stackoverflow.com/a/30158566/2422125
 function props(obj, excludeProto) {

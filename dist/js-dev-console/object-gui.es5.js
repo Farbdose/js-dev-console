@@ -1,6 +1,6 @@
 /*! Built with http://stenciljs.com */
-JsWebConsole.loadBundle('object-gui', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
-    var h = window.JsWebConsole.h;
+JsDevConsole.loadBundle('object-gui', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
+    var h = window.JsDevConsole.h;
     var ObjectGui = /** @class */ (function () {
         function ObjectGui() {
             this.isLast = true;

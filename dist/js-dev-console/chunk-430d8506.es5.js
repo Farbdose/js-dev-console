@@ -1,6 +1,6 @@
 /*! Built with http://stenciljs.com */
-JsWebConsole.loadBundle('chunk-430d8506.js', ['exports'], function (exports) {
-    var h = window.JsWebConsole.h;
+JsDevConsole.loadBundle('chunk-430d8506.js', ['exports'], function (exports) {
+    var h = window.JsDevConsole.h;
     //https://stackoverflow.com/a/30158566/2422125
     function props(obj, excludeProto) {
         var o = obj;

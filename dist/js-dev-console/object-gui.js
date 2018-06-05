@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-const { h } = window.JsWebConsole;
+const { h } = window.JsDevConsole;
 
 import { a as props } from './chunk-0e9febea.js';
 

@@ -103,7 +103,7 @@ Object.entries
 Object.entries||(Object.entries=function(c){for(var b=Object.keys(c),a=b.length,d=Array(a);a--;)d[a]=[b[a],c[b[a]]];return d});
 /*! Built with http://stenciljs.com */
 (function(Context,namespace,hydratedCssClass,resourcesUrl,s){"use strict";
-s=document.querySelector("script[data-namespace='js-web-console']");if(s){resourcesUrl=s.getAttribute('data-resources-url');}
+s=document.querySelector("script[data-namespace='js-dev-console']");if(s){resourcesUrl=s.getAttribute('data-resources-url');}
 this && this.__extends || function() {
   var extendStatics = Object.setPrototypeOf || {
     __proto__: []
@@ -2959,4 +2959,4 @@ this && this.__extends || function() {
   // and requires the es5 way of extending HTMLElement
   createPlatformMainLegacy(namespace, Context, window, document, resourcesUrl, hydratedCssClass);
 })(window, document, Context, namespace);
-})({},"JsWebConsole","hydrated");
+})({},"JsDevConsole","hydrated");

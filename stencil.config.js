@@ -1,7 +1,7 @@
 const sass = require('@stencil/sass');
 
 exports.config = {
-  namespace: 'js-web-console',
+  namespace: 'js-dev-console',
   outputTargets: [
     {
       type: 'dist'
