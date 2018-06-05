@@ -1,14 +1,14 @@
 {
-	"name": "js-web-console",
+	"name": "js-dev-console",
 	"version": "0.0.2",
-	"description": "JS Web Console",
+	"description": "JS Dev Console",
 	"main": "dist/js-web-console.js",
 	"types": "dist/types/components.d.ts",
 	"collection": "dist/collection/collection-manifest.json",
 	"files": [
 		"dist/"
 	],
-	"browser": "dist/js-web-console.js",
+	"browser": "dist/js-dev-console.js",
 	"scripts": {
 		"build": "stencil build",
 		"dev": "sd concurrent \"stencil build --dev --es5 --watch\" \"stencil-dev-server\" ",
