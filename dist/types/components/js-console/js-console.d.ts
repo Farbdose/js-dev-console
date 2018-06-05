@@ -17,18 +17,19 @@ export declare class JsConsole {
     historyIndex: number;
     input: any;
     rows: number;
-    autoCompleteOptions: Array<string>;
     fixed: boolean;
     display: boolean;
     elements: {
         textArea: HTMLInputElement;
         scrollMarker: HTMLDivElement;
         history: HTMLDivElement;
+        autoCompleteOptions: HTMLDataListElement;
     };
     inputBase: string;
     counter: number;
     log: any;
     horizontal: boolean;
+    autoCompleteDebounce: any;
     proxy(context: any, method: any, name: any, handler: any): () => void;
     constructor();
     watchHandler(newValue: string, oldValue: string): void;

@@ -27,7 +27,6 @@ export class JsConsole {
         this.historyIndex = 0;
         this.input = "";
         this.rows = 1;
-        this.autoCompleteOptions = [];
         this.fixed = false;
         this.display = false;
         this.inputBase = "";
@@ -55,7 +54,6 @@ export class JsConsole {
             this.handleConsoleEvent(args);
         });
         this.updateOrientation();
-        this.handleOnPatternChange("resize");
     }
     proxy(context, method, name, handler) {
         return function () {
@@ -116,7 +114,8 @@ export class JsConsole {
         this.elements = {
             textArea: r.querySelector(".input-area"),
             scrollMarker: r.querySelector(".scroll-marker"),
-            history: r.querySelector(".history")
+            history: r.querySelector(".history"),
+            autoCompleteOptions: r.querySelector("#completionOptions")
         };
     }
     handleConsoleEvent(args) {
@@ -166,7 +165,7 @@ export class JsConsole {
         }
         else if (event["key"] === 'ArrowUp') {
             if (this.historyIndex < this.inputs.length - 1) {
-                this.autoCompleteOptions = [];
+                this.elements.autoCompleteOptions.innerHTML = "<div></div>";
                 if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
                     this.historyIndex += 1;
                     this.input = this.getInputEntry();
@@ -176,7 +175,7 @@ export class JsConsole {
         }
         else if (event["key"] === 'ArrowDown') {
             if (this.historyIndex > 0) {
-                this.autoCompleteOptions = [];
+                this.elements.autoCompleteOptions.innerHTML = "<div></div>";
                 if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
                     this.historyIndex -= 1;
                     this.input = this.getInputEntry();
@@ -223,7 +222,7 @@ export class JsConsole {
             this.outputs = [...this.outputs, res];
             this.inputs = [...this.inputs, ""];
             this.input = "";
-            this.autoCompleteOptions = [];
+            this.elements.autoCompleteOptions.innerHTML = "<div></div>";
             setTimeout(() => {
                 let lastHistChild = this.elements.history.firstElementChild.lastElementChild;
                 if (lastHistChild) {
@@ -240,69 +239,97 @@ export class JsConsole {
     }
     updateAutoCompleteOptions() {
         //https://regex101.com/r/3fvjJu/10
-        let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
-        let matches = reg.exec(this.input);
-        let prefix = matches ? matches[1] : undefined;
-        reg.lastIndex = 0;
-        this.inputBase = this.input.replace(reg, "$1");
-        reg.lastIndex = 0;
-        if (matches) {
-            matches[2] = "this." + matches[2];
-            let wrappedCommand = matches.slice(2).join("");
-            matches = reg.exec(wrappedCommand);
+        let running = false;
+        if (this.autoCompleteDebounce) {
+            clearTimeout(this.autoCompleteDebounce);
+            running = false;
+        }
+        this.autoCompleteDebounce = setTimeout(() => {
+            this.autoCompleteDebounce = null;
+            running = true;
+            let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
+            let matches = reg.exec(this.input);
+            let prefix = matches ? matches[1] : undefined;
             reg.lastIndex = 0;
-            //console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
-        }
-        let base = "";
-        let prop;
-        let res = [];
-        if (matches) {
-            base += matches[2] || "";
-            prop = matches[5] || "";
-        }
-        try {
-            res = props(function () {
-                return eval.apply(this, [base]);
-            }(), true);
-        }
-        catch (_) {
-        }
-        if (base && base != "") {
-            if (res) {
-                res = res.filter((p) => {
-                    return prop ? (p.indexOf(prop) == 0) : true;
-                });
-                res.length = 100;
-                res = res.map((e) => {
-                    base = base.replace(/^this\.?/, "");
-                    if (base == "") {
-                        matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
-                    }
-                    return prefix + base + matches[3] + (matches[4] || "") + e;
-                });
+            this.inputBase = this.input.replace(reg, "$1");
+            reg.lastIndex = 0;
+            if (matches) {
+                matches[2] = "this." + matches[2];
+                let wrappedCommand = matches.slice(2).join("");
+                matches = reg.exec(wrappedCommand);
+                reg.lastIndex = 0;
+                //console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
+            }
+            let base = "";
+            let prop;
+            let res = [];
+            if (matches) {
+                base += matches[2] || "";
+                prop = matches[5] || "";
+            }
+            try {
+                res = props(function () {
+                    return eval.apply(this, [base]);
+                }(), true);
+            }
+            catch (_) {
+            }
+            if (!running) {
+                return;
+            }
+            if (base && base != "") {
+                if (res) {
+                    res = res.filter((p) => {
+                        return prop ? (p.indexOf(prop) == 0) : true;
+                    });
+                    //res.length = 100;
+                    res = res.map((e) => {
+                        base = base.replace(/^this\.?/, "");
+                        if (base == "") {
+                            matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
+                        }
+                        return prefix + base + matches[3] + (matches[4] || "") + e;
+                    });
+                }
+                else {
+                    res = [];
+                }
             }
             else {
-                res = [];
+                res = res.map((e) => {
+                    return (prefix || this.input) + e.replace(/^this\.?/, "");
+                });
             }
-        }
-        else {
-            res = res.map((e) => {
-                return (prefix || this.input) + e.replace(/^this\.?/, "");
-            });
-        }
-        res.sort();
-        let hist = this.inputs.slice(0, -1);
-        if (hist) {
-            hist = hist.filter((p) => {
-                return p.indexOf(this.input) == 0;
-            });
-            res = uniq(hist.concat(res));
-        }
-        let index = res.indexOf(this.input);
-        if (index != -1) {
-            res.splice(index, 1);
-        }
-        this.autoCompleteOptions = res; // ["> " + command, ">> " + wrappedCommand].concat(["base: " + base, "child: " + prop]).concat(res);
+            if (!running) {
+                return;
+            }
+            res.sort();
+            if (!running) {
+                return;
+            }
+            let hist = this.inputs.slice(0, -1);
+            if (hist) {
+                hist = hist.filter((p) => {
+                    return p.indexOf(this.input) == 0;
+                });
+                res = uniq(hist.concat(res));
+            }
+            let index = res.indexOf(this.input);
+            if (index != -1) {
+                res.splice(index, 1);
+            }
+            if (!running) {
+                return;
+            }
+            let d = document.createElement("div");
+            d.innerHTML = res.map((entry) => {
+                return "<option value='" + entry + "'></option>";
+            }).join("\n");
+            if (!running) {
+                return;
+            }
+            this.elements.autoCompleteOptions.replaceChild(d, this.elements.autoCompleteOptions.firstElementChild);
+        }, 100);
     }
     handleHistoryClick(i) {
         this.input = this.inputs[i];
@@ -376,9 +403,8 @@ export class JsConsole {
                     }))),
                 h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
                 h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
-                h("datalist", { id: "completionOptions" }, this.autoCompleteOptions.map((entry) => {
-                    return (h("option", { value: entry }));
-                })),
+                h("datalist", { id: "completionOptions" },
+                    h("div", null)),
                 h("span", { class: "clear", onTouchStart: (e) => this.clear(e), onMouseDown: (e) => this.clear(e) },
                     h("span", null, "\u2715"))),
             h("div", { class: "scroll-marker" })));
@@ -386,9 +412,6 @@ export class JsConsole {
     static get is() { return "js-console"; }
     static get encapsulation() { return "shadow"; }
     static get properties() { return {
-        "autoCompleteOptions": {
-            "state": true
-        },
         "display": {
             "type": Boolean,
             "attr": "display",
@@ -439,3 +462,4 @@ export class JsConsole {
     }; }
     static get style() { return "/**style-placeholder:js-console:**/"; }
 }
+//# sourceMappingURL=js-console.js.map

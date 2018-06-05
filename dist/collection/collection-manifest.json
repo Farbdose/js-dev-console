@@ -48,9 +48,6 @@
       ],
       "states": [
         {
-          "name": "autoCompleteOptions"
-        },
-        {
           "name": "historyIndex"
         },
         {

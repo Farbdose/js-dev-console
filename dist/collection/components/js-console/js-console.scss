@@ -1,8 +1,8 @@
 :host(.fixed) {
 	width: unset;
-	left: 0;
+	left: -1px;
 	right: -1px;
-	bottom: 0;
+	bottom: -2px;
 	max-height: 30vh;
 	position: fixed;
 
