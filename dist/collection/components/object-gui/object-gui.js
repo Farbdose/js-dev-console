@@ -303,4 +303,3 @@ export class ObjectGui {
 }
 ObjectGui.baseObjectProps = Object.getOwnPropertyNames(Object.prototype).join("");
 ObjectGui.baseArrayProps = Object.getOwnPropertyNames(Array.prototype).join("");
-//# sourceMappingURL=object-gui.js.map

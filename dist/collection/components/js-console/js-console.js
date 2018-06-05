@@ -462,4 +462,3 @@ export class JsConsole {
     }; }
     static get style() { return "/**style-placeholder:js-console:**/"; }
 }
-//# sourceMappingURL=js-console.js.map
