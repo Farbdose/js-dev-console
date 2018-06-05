@@ -119,8 +119,6 @@
 		background-color: white;
 		margin-top: -1px;
 		border-top: 1px solid lightgrey;
-		margin-bottom: 2px;
-		height: calc(1rem + 5px);
 		width: 100%;
 
 		.clear {
@@ -150,9 +148,9 @@
 		}
 
 		.history, .input-area {
-			font-size: 1rem;
-			line-height: 1rem;
-			height: 1rem;
+			font-size: 16px;
+			line-height: 16px;
+			height: 16px;
 		}
 
 		.history {
@@ -216,7 +214,7 @@
 			transform: scaleX(0.5);
 			float: left;
 			color: blue;
-			font-size: 1.2rem;
+			font-size: 19.2px;
 			margin: -1px 4px -1px 4px;
 			font-family: Consolas, monospace;
 			font-weight: 800;

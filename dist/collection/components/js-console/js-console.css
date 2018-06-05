@@ -79,8 +79,6 @@
     background-color: white;
     margin-top: -1px;
     border-top: 1px solid lightgrey;
-    margin-bottom: 2px;
-    height: calc(1rem + 5px);
     width: 100%; }
     :host .bottom-wrapper .clear {
       font-size: 14px;
@@ -104,9 +102,9 @@
         vertical-align: middle;
         transform: translateY(-1px); }
     :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {
-      font-size: 1rem;
-      line-height: 1rem;
-      height: 1rem; }
+      font-size: 16px;
+      line-height: 16px;
+      height: 16px; }
     :host .bottom-wrapper .history {
       padding-left: 22px;
       height: 0;
@@ -154,7 +152,7 @@
       transform: scaleX(0.5);
       float: left;
       color: blue;
-      font-size: 1.2rem;
+      font-size: 19.2px;
       margin: -1px 4px -1px 4px;
       font-family: Consolas, monospace;
       font-weight: 800; }
