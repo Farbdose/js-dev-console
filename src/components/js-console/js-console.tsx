@@ -12,7 +12,7 @@ export class JsConsole {
 
 	@Prop() first: string;
 	@Prop() last: string;
-	@Prop() openOnPattern: string = null; //null, resize
+	@Prop() pattern: string = null; //null, resize
 	private patternListeners: any = {};
 
 	@State() showHistory: boolean = false;
@@ -103,7 +103,7 @@ export class JsConsole {
 		this.updateOrientation();
 	}
 
-	@Watch('openOnPattern')
+	@Watch('pattern')
 	watchHandler(newValue: string, oldValue: string) {
 		if (newValue != oldValue) {
 			this.handleOnPatternChange(newValue);
@@ -111,6 +111,7 @@ export class JsConsole {
 	}
 
 	handleOnPatternChange(newValue: string) {
+		console.log("Changing pattern to: ", newValue);
 		let l = this.patternListeners;
 		if (newValue == "resize" && !(l.resize && l.resize.listener)) {
 			l.resize = {
@@ -160,7 +161,7 @@ export class JsConsole {
 			history: r.querySelector(".history"),
 			autoCompleteOptions: r.querySelector("#completionOptions")
 		};
-		this.handleOnPatternChange(this.openOnPattern);
+		this.handleOnPatternChange(this.pattern);
 	}
 
 	handleConsoleEvent(args) {

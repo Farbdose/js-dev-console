@@ -6,7 +6,7 @@ import { a as props, b as uniq } from './chunk-0e9febea.js';
 class JsConsole {
     constructor() {
         this.url = "https://github.com/Farbdose/js-dev-console";
-        this.openOnPattern = null; //null, resize
+        this.pattern = null; //null, resize
         this.patternListeners = {};
         this.showHistory = false;
         this.test = {
@@ -74,6 +74,7 @@ class JsConsole {
         }
     }
     handleOnPatternChange(newValue) {
+        console.log("Changing pattern to: ", newValue);
         let l = this.patternListeners;
         if (newValue == "resize" && !(l.resize && l.resize.listener)) {
             l.resize = {
@@ -121,7 +122,7 @@ class JsConsole {
             history: r.querySelector(".history"),
             autoCompleteOptions: r.querySelector("#completionOptions")
         };
-        this.handleOnPatternChange(this.openOnPattern);
+        this.handleOnPatternChange(this.pattern);
     }
     handleConsoleEvent(args) {
         this.log("Log: ", args.arguments[4]);
@@ -447,13 +448,13 @@ class JsConsole {
             "type": String,
             "attr": "last"
         },
-        "openOnPattern": {
-            "type": String,
-            "attr": "open-on-pattern",
-            "watchCallbacks": ["watchHandler"]
-        },
         "outputs": {
             "state": true
+        },
+        "pattern": {
+            "type": String,
+            "attr": "pattern",
+            "watchCallbacks": ["watchHandler"]
         },
         "rows": {
             "state": true

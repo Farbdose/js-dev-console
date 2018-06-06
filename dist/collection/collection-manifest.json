@@ -38,9 +38,9 @@
           "attr": "last"
         },
         {
-          "name": "openOnPattern",
+          "name": "pattern",
           "type": "String",
-          "attr": "open-on-pattern",
+          "attr": "pattern",
           "watch": [
             "watchHandler"
           ]

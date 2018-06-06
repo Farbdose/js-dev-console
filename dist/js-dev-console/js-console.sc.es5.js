@@ -5,7 +5,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         function JsConsole() {
             var _this = this;
             this.url = "https://github.com/Farbdose/js-dev-console";
-            this.openOnPattern = null; //null, resize
+            this.pattern = null; //null, resize
             this.patternListeners = {};
             this.showHistory = false;
             this.test = {
@@ -77,6 +77,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         };
         JsConsole.prototype.handleOnPatternChange = function (newValue) {
             var _this = this;
+            console.log("Changing pattern to: ", newValue);
             var l = this.patternListeners;
             if (newValue == "resize" && !(l.resize && l.resize.listener)) {
                 l.resize = {
@@ -124,7 +125,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 history: r.querySelector(".history"),
                 autoCompleteOptions: r.querySelector("#completionOptions")
             };
-            this.handleOnPatternChange(this.openOnPattern);
+            this.handleOnPatternChange(this.pattern);
         };
         JsConsole.prototype.handleConsoleEvent = function (args) {
             this.log("Log: ", args.arguments[4]);
@@ -439,13 +440,13 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                         "type": String,
                         "attr": "last"
                     },
-                    "openOnPattern": {
-                        "type": String,
-                        "attr": "open-on-pattern",
-                        "watchCallbacks": ["watchHandler"]
-                    },
                     "outputs": {
                         "state": true
+                    },
+                    "pattern": {
+                        "type": String,
+                        "attr": "pattern",
+                        "watchCallbacks": ["watchHandler"]
                     },
                     "rows": {
                         "state": true

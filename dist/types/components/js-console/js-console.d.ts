@@ -3,7 +3,7 @@ export declare class JsConsole {
     url: string;
     first: string;
     last: string;
-    openOnPattern: string;
+    pattern: string;
     private patternListeners;
     showHistory: boolean;
     test: any;

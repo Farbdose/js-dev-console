@@ -33,7 +33,7 @@ declare global {
       'first': string;
       'fixed': boolean;
       'last': string;
-      'openOnPattern': string;
+      'pattern': string;
     }
   }
 
@@ -60,7 +60,7 @@ declare global {
       'first'?: string;
       'fixed'?: boolean;
       'last'?: string;
-      'openOnPattern'?: string;
+      'pattern'?: string;
     }
   }
 }
