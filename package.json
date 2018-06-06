@@ -1,6 +1,6 @@
 {
 	"name": "js-dev-console",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "JS Dev Console",
 	"main": "dist/js-dev-console.js",
 	"types": "dist/types/components.d.ts",
