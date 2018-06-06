@@ -27,6 +27,41 @@ declare global {
 declare global {
 
   namespace StencilComponents {
+    interface DataList {
+      'data': Array<any>;
+      'name': string;
+    }
+  }
+
+  interface HTMLDataListElement extends StencilComponents.DataList, HTMLStencilElement {}
+
+  var HTMLDataListElement: {
+    prototype: HTMLDataListElement;
+    new (): HTMLDataListElement;
+  };
+  interface HTMLElementTagNameMap {
+    'data-list': HTMLDataListElement;
+  }
+  interface ElementTagNameMap {
+    'data-list': HTMLDataListElement;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      'data-list': JSXElements.DataListAttributes;
+    }
+  }
+  namespace JSXElements {
+    export interface DataListAttributes extends HTMLAttributes {
+      'data'?: Array<any>;
+      'name'?: string;
+    }
+  }
+}
+
+
+declare global {
+
+  namespace StencilComponents {
     interface JsConsole {
       'display': boolean;
       'first': string;

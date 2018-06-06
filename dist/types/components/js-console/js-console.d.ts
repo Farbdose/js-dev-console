@@ -23,13 +23,12 @@ export declare class JsConsole {
         textArea: HTMLInputElement;
         scrollMarker: HTMLDivElement;
         history: HTMLDivElement;
-        autoCompleteOptions: HTMLDataListElement;
     };
     inputBase: string;
     counter: number;
     log: any;
     horizontal: boolean;
-    autoCompleteDebounce: any;
+    completionOptions: Array<any>;
     proxy(context: any, method: any, name: any, handler: any): () => void;
     constructor();
     watchHandler(newValue: string, oldValue: string): void;
@@ -44,6 +43,7 @@ export declare class JsConsole {
         value: any;
         type: string;
     };
+    clearCompletionOptions(): void;
     handleKeyboard(event: Event): void;
     handleSubmit(): void;
     promptChange(_: Event): void;

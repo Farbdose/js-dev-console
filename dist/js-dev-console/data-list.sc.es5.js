@@ -1,6 +1,85 @@
 /*! Built with http://stenciljs.com */
-JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
+JsDevConsole.loadBundle('data-list', ['exports', './chunk-430d8506.js'], function (exports, __chunk_1) {
     var h = window.JsDevConsole.h;
+    var ObjectGui = /** @class */ (function () {
+        function ObjectGui() {
+            this.data = [];
+            this.datatogo = [];
+            this.chunks = [];
+            this.chunkSize = 40;
+        }
+        ObjectGui.prototype.watchHandler = function (newValue, oldValue) {
+            if (newValue != oldValue) {
+                this.handleDataChange(newValue);
+            }
+        };
+        ObjectGui.prototype.handleDataChange = function (newValue) {
+            this.elements.datalist.innerHTML = "";
+            this.datatogo = newValue.slice(0);
+            this.handleDataToGoChange();
+        };
+        ObjectGui.prototype.componentDidLoad = function () {
+            var r = this.el.shadowRoot;
+            this.elements = {
+                datalist: r.querySelector("#" + this.name)
+            };
+            this.handleDataChange(this.data);
+        };
+        ObjectGui.prototype.handleDataToGoChange = function () {
+            var _this = this;
+            console.info("datatogo change 2", this.datatogo);
+            if (this.datatogo.length > 0) {
+                var chunk = document.createElement("div");
+                chunk.innerHTML = this.datatogo.splice(0, this.chunkSize).map(function (e) {
+                    return "<option value='" + e + "'></option>";
+                }).join("\n");
+                this.elements.datalist.appendChild(chunk);
+                setTimeout(function () {
+                    _this.handleDataToGoChange();
+                }, 1000);
+            }
+        };
+        ObjectGui.prototype.render = function () {
+            return (h("datalist", { id: this.name }));
+        };
+        Object.defineProperty(ObjectGui, "is", {
+            get: function () { return "data-list"; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectGui, "encapsulation", {
+            get: function () { return "shadow"; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ObjectGui, "properties", {
+            get: function () {
+                return {
+                    "chunks": {
+                        "state": true
+                    },
+                    "data": {
+                        "type": "Any",
+                        "attr": "data",
+                        "watchCallbacks": ["watchHandler"]
+                    },
+                    "datatogo": {
+                        "state": true
+                    },
+                    "el": {
+                        "elementRef": true
+                    },
+                    "name": {
+                        "type": String,
+                        "attr": "name"
+                    }
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ObjectGui;
+    }());
     var JsConsole = /** @class */ (function () {
         function JsConsole() {
             var _this = this;
@@ -291,11 +370,6 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                         }
                         return prefix + base + matches[3] + (matches[4] || "") + e;
                     });
-                    if (prop == "") {
-                        res = res.filter(function (e) {
-                            return !/^window\.(Audio|CSS|HTML|IDB|Media|RTC|SVG|DOM|MIDI|Performance|Payment|USB|Text|Presentation|WebGL|on)/.test(e);
-                        });
-                    }
                 }
                 else {
                     res = [];
@@ -447,6 +521,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         });
         return JsConsole;
     }());
+    exports.DataList = ObjectGui;
     exports.JsConsole = JsConsole;
     Object.defineProperty(exports, '__esModule', { value: true });
 });

@@ -77,7 +77,6 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         };
         JsConsole.prototype.handleOnPatternChange = function (newValue) {
             var _this = this;
-            console.log("Changing pattern to: ", newValue);
             var l = this.patternListeners;
             if (newValue == "resize" && !(l.resize && l.resize.listener)) {
                 l.resize = {
@@ -122,8 +121,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             this.elements = {
                 textArea: r.querySelector(".input-area"),
                 scrollMarker: r.querySelector(".scroll-marker"),
-                history: r.querySelector(".history"),
-                autoCompleteOptions: r.querySelector("#completionOptions")
+                history: r.querySelector(".history")
             };
             this.handleOnPatternChange(this.pattern);
         };
@@ -166,6 +164,9 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             var i = out.length - this.historyIndex;
             return i > 0 ? out[i] : undefined;
         };
+        JsConsole.prototype.clearCompletionOptions = function () {
+            this.completionOptions = [];
+        };
         JsConsole.prototype.handleKeyboard = function (event) {
             var tArea = this.elements.textArea;
             if (event["key"] === 'Escape') {
@@ -174,7 +175,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             }
             else if (event["key"] === 'ArrowUp') {
                 if (this.historyIndex < this.inputs.length - 1) {
-                    this.elements.autoCompleteOptions.innerHTML = "<div></div>";
+                    this.clearCompletionOptions();
                     if (tArea.value.substr(0, tArea.selectionStart).split("\n").length == 1) {
                         this.historyIndex += 1;
                         this.input = this.getInputEntry();
@@ -184,7 +185,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
             }
             else if (event["key"] === 'ArrowDown') {
                 if (this.historyIndex > 0) {
-                    this.elements.autoCompleteOptions.innerHTML = "<div></div>";
+                    this.clearCompletionOptions();
                     if (tArea.value.substr(tArea.selectionStart, tArea.value.length).split("\n").length == 1) {
                         this.historyIndex -= 1;
                         this.input = this.getInputEntry();
@@ -232,7 +233,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 this.outputs = this.outputs.concat([res]);
                 this.inputs = this.inputs.concat([""]);
                 this.input = "";
-                this.elements.autoCompleteOptions.innerHTML = "<div></div>";
+                this.clearCompletionOptions();
                 setTimeout(function () {
                     var lastHistChild = _this.elements.history.firstElementChild.lastElementChild;
                     if (lastHistChild) {
@@ -250,97 +251,74 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
         JsConsole.prototype.updateAutoCompleteOptions = function () {
             var _this = this;
             //https://regex101.com/r/3fvjJu/10
-            var running = false;
-            if (this.autoCompleteDebounce) {
-                clearTimeout(this.autoCompleteDebounce);
-                running = false;
+            var reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
+            var matches = reg.exec(this.input);
+            var prefix = matches ? matches[1] : undefined;
+            reg.lastIndex = 0;
+            this.inputBase = this.input.replace(reg, "$1");
+            reg.lastIndex = 0;
+            if (matches) {
+                matches[2] = "this." + matches[2];
+                var wrappedCommand = matches.slice(2).join("");
+                matches = reg.exec(wrappedCommand);
+                reg.lastIndex = 0;
+                //console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
             }
-            this.autoCompleteDebounce = setTimeout(function () {
-                _this.autoCompleteDebounce = null;
-                running = true;
-                var reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
-                var matches = reg.exec(_this.input);
-                var prefix = matches ? matches[1] : undefined;
-                reg.lastIndex = 0;
-                _this.inputBase = _this.input.replace(reg, "$1");
-                reg.lastIndex = 0;
-                if (matches) {
-                    matches[2] = "this." + matches[2];
-                    var wrappedCommand = matches.slice(2).join("");
-                    matches = reg.exec(wrappedCommand);
-                    reg.lastIndex = 0;
-                    //console.info(reg, wrappedCommand, matches, reg.exec(wrappedCommand));
-                }
-                var base = "";
-                var prop;
-                var res = [];
-                if (matches) {
-                    base += matches[2] || "";
-                    prop = matches[5] || "";
-                }
-                try {
-                    res = __chunk_1.props(function () {
-                        return eval.apply(this, [base]);
-                    }(), true);
-                }
-                catch (_) {
-                }
-                if (!running) {
-                    return;
-                }
-                if (base && base != "") {
-                    if (res) {
-                        res = res.filter(function (p) {
-                            return prop ? (p.indexOf(prop) == 0) : true;
+            var base = "";
+            var prop;
+            var res = [];
+            if (matches) {
+                base += matches[2] || "";
+                prop = matches[5] || "";
+            }
+            try {
+                res = __chunk_1.props(function () {
+                    return eval.apply(this, [base]);
+                }(), true);
+            }
+            catch (_) {
+            }
+            if (base && base != "") {
+                if (res) {
+                    res = res.filter(function (p) {
+                        return prop ? (p.indexOf(prop) == 0) : true;
+                    });
+                    //res.length = 100;
+                    res = res.map(function (e) {
+                        base = base.replace(/^this\.?/, "");
+                        if (base == "") {
+                            matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
+                        }
+                        return prefix + base + matches[3] + (matches[4] || "") + e;
+                    });
+                    if (prop == "") {
+                        res = res.filter(function (e) {
+                            return !/^window\.(Audio|CSS|HTML|IDB|Media|RTC|SVG|DOM|MIDI|Performance|Payment|USB|Text|Presentation|WebGL|on)/.test(e);
                         });
-                        //res.length = 100;
-                        res = res.map(function (e) {
-                            base = base.replace(/^this\.?/, "");
-                            if (base == "") {
-                                matches[3] = matches[3] ? matches[3].replace(/^\./, "") : "";
-                            }
-                            return prefix + base + matches[3] + (matches[4] || "") + e;
-                        });
-                    }
-                    else {
-                        res = [];
                     }
                 }
                 else {
-                    res = res.map(function (e) {
-                        return (prefix || _this.input) + e.replace(/^this\.?/, "");
-                    });
+                    res = [];
                 }
-                if (!running) {
-                    return;
-                }
-                res.sort();
-                if (!running) {
-                    return;
-                }
-                var hist = _this.inputs.slice(0, -1);
-                if (hist) {
-                    hist = hist.filter(function (p) {
-                        return p.indexOf(_this.input) == 0;
-                    });
-                    res = __chunk_1.uniq(hist.concat(res));
-                }
-                var index = res.indexOf(_this.input);
-                if (index != -1) {
-                    res.splice(index, 1);
-                }
-                if (!running) {
-                    return;
-                }
-                var d = document.createElement("div");
-                d.innerHTML = res.map(function (entry) {
-                    return "<option value='" + entry + "'></option>";
-                }).join("\n");
-                if (!running) {
-                    return;
-                }
-                _this.elements.autoCompleteOptions.replaceChild(d, _this.elements.autoCompleteOptions.firstElementChild);
-            }, 100);
+            }
+            else {
+                res = res.map(function (e) {
+                    return (prefix || _this.input) + e.replace(/^this\.?/, "");
+                });
+            }
+            res.sort();
+            var hist = this.inputs.slice(0, -1);
+            if (hist) {
+                hist = hist.filter(function (p) {
+                    return p.indexOf(_this.input) == 0;
+                });
+                res = __chunk_1.uniq(hist.concat(res));
+            }
+            var index = res.indexOf(this.input);
+            if (index != -1) {
+                res.splice(index, 1);
+            }
+            this.completionOptions = res;
         };
         JsConsole.prototype.handleHistoryClick = function (i) {
             this.input = this.inputs[i];
@@ -395,7 +373,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 }
             })), h("div", { class: "bottom-wrapper" }, h("div", { class: "history" }, h("div", { class: { "popup": true, "open": this.showHistory } }, this.inputs.slice(0, -1).map(function (entry, i) {
                 return (h("span", { onClick: function (_) { return _this.handleHistoryClick(i); } }, entry));
-            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: function (event) { return _this.promptChange(event); }, onKeyDown: function (event) { return _this.handleKeyboard(event); } }), h("datalist", { id: "completionOptions" }, h("div", null)), h("span", { class: "clear", onTouchStart: function (e) { return _this.clear(e); }, onMouseDown: function (e) { return _this.clear(e); } }, h("span", null, "\u2715"))), h("div", { class: "scroll-marker" })));
+            }))), h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: function (e) { return _this.handlePromptClick(e); }, onMouseDown: function (e) { return _this.handlePromptClick(e); } }, ">"), h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: function (event) { return _this.promptChange(event); }, onKeyDown: function (event) { return _this.handleKeyboard(event); } }), h("data-list", { data: this.completionOptions, name: "completionOptions" }), h("span", { class: "clear", onTouchStart: function (e) { return _this.clear(e); }, onMouseDown: function (e) { return _this.clear(e); } }, h("span", null, "\u2715"))), h("div", { class: "scroll-marker" })));
         };
         Object.defineProperty(JsConsole, "is", {
             get: function () { return "js-console"; },

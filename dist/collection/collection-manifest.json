@@ -1,8 +1,41 @@
 {
   "components": [
     {
+      "tag": "data-list",
+      "dependencies": [],
+      "componentClass": "ObjectGui",
+      "componentPath": "components/data-list/data-list.js",
+      "styles": {},
+      "props": [
+        {
+          "name": "data",
+          "attr": "data",
+          "watch": [
+            "watchHandler"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "attr": "name"
+        }
+      ],
+      "states": [
+        {
+          "name": "chunks"
+        },
+        {
+          "name": "datatogo"
+        }
+      ],
+      "hostElement": {
+        "name": "el"
+      }
+    },
+    {
       "tag": "js-console",
       "dependencies": [
+        "data-list",
         "object-gui"
       ],
       "componentClass": "JsConsole",
