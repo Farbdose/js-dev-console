@@ -60,7 +60,6 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 _this.handleConsoleEvent(args);
             });
             this.updateOrientation();
-            this.handleOnPatternChange(this.openOnPattern);
         }
         JsConsole.prototype.proxy = function (context, method, name, handler) {
             return function () {
@@ -125,6 +124,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-430d8506.js'], functi
                 history: r.querySelector(".history"),
                 autoCompleteOptions: r.querySelector("#completionOptions")
             };
+            this.handleOnPatternChange(this.openOnPattern);
         };
         JsConsole.prototype.handleConsoleEvent = function (args) {
             this.log("Log: ", args.arguments[4]);

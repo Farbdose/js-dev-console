@@ -101,7 +101,6 @@ export class JsConsole {
 		});
 
 		this.updateOrientation();
-		this.handleOnPatternChange(this.openOnPattern);
 	}
 
 	@Watch('openOnPattern')
@@ -161,6 +160,7 @@ export class JsConsole {
 			history: r.querySelector(".history"),
 			autoCompleteOptions: r.querySelector("#completionOptions")
 		};
+		this.handleOnPatternChange(this.openOnPattern);
 	}
 
 	handleConsoleEvent(args) {

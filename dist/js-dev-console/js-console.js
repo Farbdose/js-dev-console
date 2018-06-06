@@ -58,7 +58,6 @@ class JsConsole {
             this.handleConsoleEvent(args);
         });
         this.updateOrientation();
-        this.handleOnPatternChange(this.openOnPattern);
     }
     proxy(context, method, name, handler) {
         return function () {
@@ -122,6 +121,7 @@ class JsConsole {
             history: r.querySelector(".history"),
             autoCompleteOptions: r.querySelector("#completionOptions")
         };
+        this.handleOnPatternChange(this.openOnPattern);
     }
     handleConsoleEvent(args) {
         this.log("Log: ", args.arguments[4]);
