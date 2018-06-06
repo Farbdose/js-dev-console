@@ -10,11 +10,12 @@ export class ObjectGui {
 	@State() datatogo: Array<any> = [];
 	@State() chunks: Array<any> = [];
 	@Prop() name: string;
-	chunkSize: number = 10;
+	chunkSize: number = 50;
 	dataToGoTimeout: any;
 	elements: {
 		datalist: HTMLDataListElement
 	};
+	firstChunk: boolean = true;
 
 	@Watch('data')
 	watchHandler(newValue: string, oldValue: string) {
@@ -24,7 +25,12 @@ export class ObjectGui {
 	}
 
 	handleDataChange(newValue) {
-		this.elements.datalist.innerHTML = "";
+		let toRemove = Array.from(this.elements.datalist.children);
+		toRemove.shift();
+		toRemove.forEach((e) => {
+			this.elements.datalist.removeChild(e);
+		});
+		this.firstChunk = true;
 		this.datatogo = newValue.slice(0);
 		this.handleDataToGoChange();
 	}
@@ -42,16 +48,39 @@ export class ObjectGui {
 		}
 
 		if(this.datatogo.length > 0) {
-			let chunk = document.createElement("div");
-			chunk.innerHTML = this.datatogo.splice(0, this.chunkSize).map((e) => {
-				return "<option value='"+e+"'></option>";
-			}).join("\n");
-			this.elements.datalist.appendChild(chunk);
+			let entries = this.datatogo.splice(0, this.chunkSize);
+			let c = this.elements.datalist.firstElementChild;
+			console.info(c);
+			if(this.firstChunk && c) {
+				console.log("updating");
+				for(let i=0; i<this.chunkSize; i++) {
+					if(i<entries.length) {
+						c.children[i].setAttribute("value", entries[i]);
+					}else{
+						c.children[i].setAttribute("value", null);
+					}
+				}
+			}else {
+				let chunk = document.createElement("div");
+
+				let str = "";
+				for(let i=0; i<this.chunkSize; i++) {
+					if(i<entries.length) {
+						str += "<option value='" + entries[i] + "'></option>";
+					}else{
+						str += "<option value=null></option>";
+					}
+				}
+				chunk.innerHTML = str
+				this.elements.datalist.appendChild(chunk);
+			}
 
 			this.dataToGoTimeout = requestAnimationFrame(()=>{
 				this.handleDataToGoChange();
 			});
 		}
+
+		this.firstChunk = false;
 	}
 
 	render() {

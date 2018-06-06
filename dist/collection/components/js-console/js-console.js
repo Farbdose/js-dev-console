@@ -1,4 +1,5 @@
 import { props, uniq } from "../utils";
+import "datalist-polyfill";
 export class JsConsole {
     constructor() {
         this.url = "https://github.com/Farbdose/js-dev-console";

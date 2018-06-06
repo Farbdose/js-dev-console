@@ -1,5 +1,6 @@
 import { Component, Element, Prop, State, Watch } from '@stencil/core';
 import { props, uniq } from "../utils";
+import "datalist-polyfill";
 
 @Component({
 	tag: 'js-console',

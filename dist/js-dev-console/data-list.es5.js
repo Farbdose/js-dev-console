@@ -6,7 +6,8 @@ JsDevConsole.loadBundle('data-list', ['exports', './chunk-430d8506.js'], functio
             this.data = [];
             this.datatogo = [];
             this.chunks = [];
-            this.chunkSize = 10;
+            this.chunkSize = 50;
+            this.firstChunk = true;
         }
         ObjectGui.prototype.watchHandler = function (newValue, oldValue) {
             if (newValue != oldValue) {
@@ -14,7 +15,13 @@ JsDevConsole.loadBundle('data-list', ['exports', './chunk-430d8506.js'], functio
             }
         };
         ObjectGui.prototype.handleDataChange = function (newValue) {
-            this.elements.datalist.innerHTML = "";
+            var _this = this;
+            var toRemove = Array.from(this.elements.datalist.children);
+            toRemove.shift();
+            toRemove.forEach(function (e) {
+                _this.elements.datalist.removeChild(e);
+            });
+            this.firstChunk = true;
             this.datatogo = newValue.slice(0);
             this.handleDataToGoChange();
         };
@@ -30,15 +37,39 @@ JsDevConsole.loadBundle('data-list', ['exports', './chunk-430d8506.js'], functio
                 cancelAnimationFrame(this.dataToGoTimeout);
             }
             if (this.datatogo.length > 0) {
-                var chunk = document.createElement("div");
-                chunk.innerHTML = this.datatogo.splice(0, this.chunkSize).map(function (e) {
-                    return "<option value='" + e + "'></option>";
-                }).join("\n");
-                this.elements.datalist.appendChild(chunk);
+                var entries = this.datatogo.splice(0, this.chunkSize);
+                var c = this.elements.datalist.firstElementChild;
+                console.info(c);
+                if (this.firstChunk && c) {
+                    console.log("updating");
+                    for (var i = 0; i < this.chunkSize; i++) {
+                        if (i < entries.length) {
+                            c.children[i].setAttribute("value", entries[i]);
+                        }
+                        else {
+                            c.children[i].setAttribute("value", null);
+                        }
+                    }
+                }
+                else {
+                    var chunk = document.createElement("div");
+                    var str = "";
+                    for (var i = 0; i < this.chunkSize; i++) {
+                        if (i < entries.length) {
+                            str += "<option value='" + entries[i] + "'></option>";
+                        }
+                        else {
+                            str += "<option value=null></option>";
+                        }
+                    }
+                    chunk.innerHTML = str;
+                    this.elements.datalist.appendChild(chunk);
+                }
                 this.dataToGoTimeout = requestAnimationFrame(function () {
                     _this.handleDataToGoChange();
                 });
             }
+            this.firstChunk = false;
         };
         ObjectGui.prototype.render = function () {
             return (h("datalist", { id: this.name }));

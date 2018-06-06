@@ -1,7 +1,5 @@
 import '../../stencil.core';
-import '../../stencil.core';
-import '../../stencil.core';
-import '../../stencil.core';
+import "datalist-polyfill";
 export declare class JsConsole {
     url: string;
     first: string;

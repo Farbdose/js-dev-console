@@ -1,7 +1,4 @@
 import '../../stencil.core';
-import '../../stencil.core';
-import '../../stencil.core';
-import '../../stencil.core';
 export declare class ObjectGui {
     el: HTMLElement;
     data: Array<any>;
@@ -13,6 +10,7 @@ export declare class ObjectGui {
     elements: {
         datalist: HTMLDataListElement;
     };
+    firstChunk: boolean;
     watchHandler(newValue: string, oldValue: string): void;
     handleDataChange(newValue: any): void;
     componentDidLoad(): void;
