@@ -36,7 +36,6 @@ export class ObjectGui {
             let c = this.elements.datalist.firstElementChild;
             console.info(c);
             if (this.firstChunk && c) {
-                console.log("updating");
                 for (let i = 0; i < this.chunkSize; i++) {
                     if (i < entries.length) {
                         c.children[i].setAttribute("value", entries[i]);

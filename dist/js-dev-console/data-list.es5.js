@@ -41,7 +41,6 @@ JsDevConsole.loadBundle('data-list', ['exports', './chunk-430d8506.js'], functio
                 var c = this.elements.datalist.firstElementChild;
                 console.info(c);
                 if (this.firstChunk && c) {
-                    console.log("updating");
                     for (var i = 0; i < this.chunkSize; i++) {
                         if (i < entries.length) {
                             c.children[i].setAttribute("value", entries[i]);

@@ -1,6 +1,6 @@
 {
 	"name": "js-dev-console",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "JS Dev Console",
 	"main": "dist/js-dev-console.js",
 	"types": "dist/types/components.d.ts",
@@ -17,9 +17,6 @@
 		"test": "jest --no-cache",
 		"test.watch": "jest --watch --no-cache"
 	},
-	"dependencies": {
-		"datalist-polyfill": "^1.13.1"
-	},
 	"devDependencies": {
 		"@stencil/core": "^0.8.0",
 		"@stencil/dev-server": "latest",
@@ -28,7 +25,8 @@
 		"@types/jest": "^21.1.1",
 		"jest": "^21.2.1",
 		"tslint": "^5.9.1",
-		"tslint-eslint-rules": "^5.1.0"
+		"tslint-eslint-rules": "^5.1.0",
+		"datalist-polyfill": "^1.13.1"
 	},
 	"repository": {
 		"type": "git",
