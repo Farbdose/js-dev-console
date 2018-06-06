@@ -101,6 +101,7 @@ export class JsConsole {
 		});
 
 		this.updateOrientation();
+		this.handleOnPatternChange(this.openOnPattern);
 	}
 
 	@Watch('openOnPattern')

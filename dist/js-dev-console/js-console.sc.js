@@ -58,6 +58,7 @@ class JsConsole {
             this.handleConsoleEvent(args);
         });
         this.updateOrientation();
+        this.handleOnPatternChange(this.openOnPattern);
     }
     proxy(context, method, name, handler) {
         return function () {
