@@ -211,7 +211,7 @@ export class ObjectGui {
                     "highlight": true,
                     func: isFunction
                 } },
-                isObj ? (h("span", { class: "type" }, this.getType())) : (h("span", { class: type }, type === "string" && !isFunction ? '"' + val + '"' : val + "")),
+                isObj ? (h("span", { class: "type" }, this.getType())) : (h("span", { class: type }, type === "string" && !isFunction ? (h("pre", null, '"' + val + '"')) : val + "")),
                 isObj ? " " : "",
                 isFunction ? this.value.name : "",
                 isObj ? openingBraket : "",

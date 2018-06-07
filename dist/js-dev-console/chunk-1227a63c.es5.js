@@ -1,5 +1,5 @@
 /*! Built with http://stenciljs.com */
-JsDevConsole.loadBundle('chunk-430d8506.js', ['exports'], function (exports) {
+JsDevConsole.loadBundle('chunk-1227a63c.js', ['exports'], function (exports) {
     var h = window.JsDevConsole.h;
     //https://stackoverflow.com/a/30158566/2422125
     function props(obj, excludeProto) {
@@ -36,6 +36,20 @@ JsDevConsole.loadBundle('chunk-430d8506.js', ['exports'], function (exports) {
             }
         });
     }
+    // https://gist.github.com/nmsdvid/8807205
+    function debounce(callback, time, interval) {
+        if (time === void 0) { time = 250; }
+        if (interval === void 0) { interval = null; }
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            clearTimeout(interval);
+            interval = setTimeout(function () { return callback.apply(void 0, args); }, time);
+        };
+    }
     exports.props = props;
+    exports.debounce = debounce;
     exports.uniq = uniq;
 });

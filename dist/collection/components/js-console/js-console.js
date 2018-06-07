@@ -1,4 +1,4 @@
-import { props, uniq } from "../utils";
+import { debounce, props, uniq } from "../utils";
 import "datalist-polyfill";
 export class JsConsole {
     constructor() {
@@ -32,17 +32,13 @@ export class JsConsole {
         this.display = false;
         this.inputBase = "";
         this.counter = 0;
-        this.horizontal = true;
-        this.log = console.log;
         this.log = () => {
         };
+        this.horizontal = true;
+        //this.log = console.log;
         ["log", "debug", "warn", "error"].forEach((key) => {
             console[key] = this.proxy(console, console[key], key, (args) => this.handleConsoleEvent(args));
         });
-        setInterval(() => {
-            this.counter += 1;
-            this.test.jkl = [{ "afa": "Qff", "gfs": "Rsae" }, { "def": 2, "ff": 3 }][this.counter % 2];
-        }, 150);
         if (!window["debug"]) {
             class Debug {
             }
@@ -118,6 +114,7 @@ export class JsConsole {
             history: r.querySelector(".history")
         };
         this.handleOnPatternChange(this.pattern);
+        this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 300);
     }
     handleConsoleEvent(args) {
         this.log("Log: ", args.arguments[4]);
@@ -242,6 +239,9 @@ export class JsConsole {
         this.updateAutoCompleteOptions();
     }
     updateAutoCompleteOptions() {
+    }
+    updateAutoCompleteOptionsUtil() {
+        console.info("Updating autocomplete", this.input);
         //https://regex101.com/r/3fvjJu/10
         let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
         let matches = reg.exec(this.input);
@@ -336,12 +336,11 @@ export class JsConsole {
     }
     hostData() {
         return {
-            class: { fixed: this.fixed },
-            style: { display: this.display ? "block" : "none" }
+            class: { fixed: this.fixed }
         };
     }
     render() {
-        return (h("form", { onSubmit: (_) => this.handleSubmit(), action: "javascript:void(0);" },
+        return this.display ? (h("form", { onSubmit: (_) => this.handleSubmit(), action: "javascript:void(0);" },
             h("div", { class: "url" },
                 h("a", { href: this.url }, "Github")),
             h("div", { class: "scroll-mask" },
@@ -358,7 +357,7 @@ export class JsConsole {
                 else if (entry.type == "log") {
                     return (h("div", { class: "scroll-mask" },
                         h("div", { class: "scroll" },
-                            h("div", { class: "output log" }, entry.value.map((e) => {
+                            h("pre", { class: "output log" }, entry.value.map((e) => {
                                 switch (typeof e) {
                                     case "string":
                                         return (h("span", null, e));
@@ -374,7 +373,7 @@ export class JsConsole {
                 else if (entry.type != "") {
                     return (h("div", { class: "scroll-mask" },
                         h("div", { class: "scroll" },
-                            h("div", { class: "output " + entry.type }, "" + entry.value))));
+                            h("pre", { class: "output " + entry.type }, "" + entry.value))));
                 }
             })),
             h("div", { class: "bottom-wrapper" },
@@ -383,15 +382,18 @@ export class JsConsole {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
                 h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
-                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
+                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, size: 250, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
                 h("data-list", { data: this.completionOptions, name: "completionOptions" }),
                 h("span", { class: "clear", onTouchStart: (e) => this.clear(e), onMouseDown: (e) => this.clear(e) },
                     h("span", null, "\u2715"))),
-            h("div", { class: "scroll-marker" })));
+            h("div", { class: "scroll-marker" }))) : "";
     }
     static get is() { return "js-console"; }
     static get encapsulation() { return "shadow"; }
     static get properties() { return {
+        "completionOptions": {
+            "state": true
+        },
         "display": {
             "type": Boolean,
             "attr": "display",

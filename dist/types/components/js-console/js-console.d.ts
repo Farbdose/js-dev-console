@@ -27,7 +27,7 @@ export declare class JsConsole {
     };
     inputBase: string;
     counter: number;
-    log: any;
+    log: Function;
     horizontal: boolean;
     completionOptions: Array<any>;
     proxy(context: any, method: any, name: any, handler: any): () => void;
@@ -49,15 +49,13 @@ export declare class JsConsole {
     handleSubmit(): void;
     promptChange(_: Event): void;
     updateAutoCompleteOptions(): void;
+    updateAutoCompleteOptionsUtil(): void;
     handleHistoryClick(i: any): void;
     handlePromptClick(event: TouchEvent | MouseEvent): void;
     clear(event?: Event): void;
     hostData(): {
         class: {
             fixed: boolean;
-        };
-        style: {
-            display: string;
         };
     };
     render(): JSX.Element;

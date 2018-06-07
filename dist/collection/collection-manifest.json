@@ -81,6 +81,9 @@
       ],
       "states": [
         {
+          "name": "completionOptions"
+        },
+        {
           "name": "historyIndex"
         },
         {

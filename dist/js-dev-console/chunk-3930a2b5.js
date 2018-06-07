@@ -1,5 +1,8 @@
+/*! Built with http://stenciljs.com */
+const { h } = window.JsDevConsole;
+
 //https://stackoverflow.com/a/30158566/2422125
-export function props(obj, excludeProto) {
+function props(obj, excludeProto) {
     let o = obj;
     let res = Object.getOwnPropertyNames(o);
     for (; o != null && o !== Object; o = Object.getPrototypeOf(o)) {
@@ -21,7 +24,7 @@ export function props(obj, excludeProto) {
     return res;
 }
 //https://stackoverflow.com/a/9229821/2422125
-export function uniq(a) {
+function uniq(a) {
     let prims = { "boolean": {}, "number": {}, "string": {} }, objs = [];
     return a.filter((item) => {
         let type = typeof item;
@@ -33,10 +36,21 @@ export function uniq(a) {
         }
     });
 }
-// https://gist.github.com/nmsdvid/8807205
-export function debounce(callback, time = 250, interval) {
+// https://gist.github.com/anaibol/b511550e0d6faed05bf777a50ed37e59
+function debounce(func, wait, immediate = false) {
+    let timeout;
     return (...args) => {
-        clearTimeout(interval);
-        interval = setTimeout(() => callback(...args), time);
+        console.log("test");
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            timeout = null;
+            if (!immediate)
+                func.apply(this, args);
+        }, wait);
+        if (immediate && !timeout) {
+            func.apply(this, [...args]);
+        }
     };
 }
+
+export { props as a, debounce as b, uniq as c };

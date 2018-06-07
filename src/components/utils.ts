@@ -37,3 +37,12 @@ export function uniq<T>(a: Array<T>): Array<T> {
 		}
 	});
 }
+
+
+// https://gist.github.com/nmsdvid/8807205
+export function debounce(callback, time = 250, interval?) {
+	return (...args) => {
+		clearTimeout(interval);
+		interval = setTimeout(() => callback(...args), time);
+	}
+}

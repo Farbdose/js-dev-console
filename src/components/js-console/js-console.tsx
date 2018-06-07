@@ -1,5 +1,5 @@
 import { Component, Element, Prop, State, Watch } from '@stencil/core';
-import { props, uniq } from "../utils";
+import { debounce, props, uniq } from "../utils";
 import "datalist-polyfill";
 
 @Component({
@@ -58,9 +58,10 @@ export class JsConsole {
 
 	inputBase = "";
 	counter: number = 0;
-	log: any;
+	log: Function = () => {
+	};
 	horizontal: boolean = true;
-	completionOptions: Array<any>;
+	@State() completionOptions: Array<any>;
 
 	proxy(context, method, name, handler) {
 		return function () {
@@ -73,17 +74,10 @@ export class JsConsole {
 	}
 
 	constructor() {
-		this.log = console.log;
-		this.log = () => {
-		};
+		//this.log = console.log;
 		["log", "debug", "warn", "error"].forEach((key) => {
 			console[key] = this.proxy(console, console[key], key, (args) => this.handleConsoleEvent(args));
 		});
-
-		setInterval(() => {
-			this.counter += 1;
-			this.test.jkl = [{"afa": "Qff", "gfs": "Rsae"}, {"def": 2, "ff": 3}][this.counter % 2];
-		}, 150);
 
 		if (!window["debug"]) {
 			class Debug {
@@ -160,6 +154,7 @@ export class JsConsole {
 			history: r.querySelector(".history")
 		};
 		this.handleOnPatternChange(this.pattern);
+		this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 300);
 	}
 
 	handleConsoleEvent(args) {
@@ -303,8 +298,10 @@ export class JsConsole {
 	}
 
 	updateAutoCompleteOptions() {
+	}
+	updateAutoCompleteOptionsUtil() {
+		console.info("Updating autocomplete", this.input);
 		//https://regex101.com/r/3fvjJu/10
-
 		let reg = /(.*?)\b([_a-zA-Z]\w*(?:\.[_a-zA-Z]\w*(?!$)|\['[^'\r\n]+'\]|\["[^"\r\n]+"\]|\[\d+\])*)(?:(\.|(?:\[("|'|)))(|\d+|[_a-zA-Z]\w*|(?:(?!\4)[^\n\r])+))?($|\4|\4\])$/gm;
 		let matches = reg.exec(this.input);
 		let prefix = matches ? matches[1] : undefined;
@@ -353,9 +350,9 @@ export class JsConsole {
 					return prefix + base + matches[3] + (matches[4] || "") + e;
 				});
 
-				if(prop == "") {
+				if (prop == "") {
 					res = res.filter((e) => {
-						return !/^window\.(Audio|CSS|HTML|IDB|Media|RTC|SVG|DOM|MIDI|Performance|Payment|USB|Text|Presentation|WebGL|on)/.test(e)
+						return !/^window\.(Audio|CSS|HTML|IDB|Media|RTC|SVG|DOM|MIDI|Performance|Payment|USB|Text|Presentation|WebGL|on)/.test(e);
 					});
 				}
 			} else {
@@ -417,13 +414,12 @@ export class JsConsole {
 
 	hostData() {
 		return {
-			class: {fixed: this.fixed},
-			style: {display: this.display ? "block" : "none"}
+			class: {fixed: this.fixed}
 		};
 	}
 
 	render() {
-		return (
+		return this.display ? (
 			<form onSubmit={(_) => this.handleSubmit()} action="javascript:void(0);">
 				<div class="url"><a href={this.url}>Github</a></div>
 				<div class="scroll-mask">
@@ -447,7 +443,7 @@ export class JsConsole {
 							} else if (entry.type == "log") {
 								return (<div class="scroll-mask">
 									<div class="scroll">
-										<div class="output log">{
+										<pre class="output log">{
 											entry.value.map((e) => {
 												switch (typeof e) {
 													case "string":
@@ -460,13 +456,13 @@ export class JsConsole {
 														return (<object-gui obj={e}></object-gui>);
 												}
 											})
-										}</div>
+										}</pre>
 									</div>
 								</div>);
 							} else if (entry.type != "") {
 								return (<div class="scroll-mask">
 									<div class="scroll">
-										<div class={"output " + entry.type}>{"" + entry.value}</div>
+										<pre class={"output " + entry.type}>{"" + entry.value}</pre>
 									</div>
 								</div>);
 							}
@@ -492,6 +488,7 @@ export class JsConsole {
 						id="input-area"
 						class="input-area"
 						spellCheck={false}
+						size={250}
 						value={this.input}
 						onInput={(event) => this.promptChange(event)}
 						onKeyDown={(event) => this.handleKeyboard(event)}>
@@ -503,6 +500,6 @@ export class JsConsole {
 				</div>
 				<div class="scroll-marker"></div>
 			</form>
-		);
+		) : "";
 	}
 }

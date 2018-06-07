@@ -26,7 +26,9 @@ export class ObjectGui {
 
 	handleDataChange(newValue) {
 		let toRemove = Array.from(this.elements.datalist.children);
-		toRemove.shift();
+		if(newValue && newValue.length > 0) {
+			toRemove.shift();
+		}
 		toRemove.forEach((e) => {
 			this.elements.datalist.removeChild(e);
 		});
@@ -56,7 +58,7 @@ export class ObjectGui {
 					if(i<entries.length) {
 						c.children[i].setAttribute("value", entries[i]);
 					}else{
-						c.children[i].setAttribute("value", null);
+						c.children[i].removeAttribute("value");
 					}
 				}
 			}else {
@@ -67,7 +69,7 @@ export class ObjectGui {
 					if(i<entries.length) {
 						str += "<option value='" + entries[i] + "'></option>";
 					}else{
-						str += "<option value=null></option>";
+						str += "<option></option>";
 					}
 				}
 				chunk.innerHTML = str

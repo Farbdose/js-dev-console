@@ -36,5 +36,12 @@ function uniq(a) {
         }
     });
 }
+// https://gist.github.com/nmsdvid/8807205
+function debounce(callback, time = 250, interval) {
+    return (...args) => {
+        clearTimeout(interval);
+        interval = setTimeout(() => callback(...args), time);
+    };
+}
 
-export { props as a, uniq as b };
+export { props as a, debounce as b, uniq as c };
