@@ -50,6 +50,10 @@
     @supports (-webkit-appearance: none) {
       :host .scroll::-webkit-scrollbar {
         display: none; } }
+  :host pre {
+    margin: 0;
+    display: inline-block;
+    font-family: Consolas, monospace; }
   :host .entries {
     overflow: hidden; }
   :host .output {

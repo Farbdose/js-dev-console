@@ -114,7 +114,7 @@ export class JsConsole {
             history: r.querySelector(".history")
         };
         this.handleOnPatternChange(this.pattern);
-        this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 300);
+        this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 200);
     }
     handleConsoleEvent(args) {
         this.log("Log: ", args.arguments[4]);
@@ -298,19 +298,24 @@ export class JsConsole {
                 return (prefix || this.input) + e.replace(/^this\.?/, "");
             });
         }
-        res.sort();
-        let hist = this.inputs.slice(0, -1);
-        if (hist) {
-            hist = hist.filter((p) => {
-                return p.indexOf(this.input) == 0;
-            });
-            res = uniq(hist.concat(res));
+        if (res.length < 50) {
+            res.sort();
+            let hist = this.inputs.slice(0, -1);
+            if (hist) {
+                hist = hist.filter((p) => {
+                    return p.indexOf(this.input) == 0;
+                });
+                res = uniq(hist.concat(res));
+            }
+            let index = res.indexOf(this.input);
+            if (index != -1) {
+                res.splice(index, 1);
+            }
+            this.completionOptions = res;
         }
-        let index = res.indexOf(this.input);
-        if (index != -1) {
-            res.splice(index, 1);
+        else {
+            this.completionOptions = [];
         }
-        this.completionOptions = res;
     }
     handleHistoryClick(i) {
         this.input = this.inputs[i];
@@ -382,7 +387,7 @@ export class JsConsole {
                         return (h("span", { onClick: (_) => this.handleHistoryClick(i) }, entry));
                     }))),
                 h("span", { class: { "prompt": true, "open": this.showHistory }, onTouchStart: (e) => this.handlePromptClick(e), onMouseDown: (e) => this.handlePromptClick(e) }, ">"),
-                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, size: 250, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
+                h("input", { autoCapitalize: "off", autoCorrect: "off", autoComplete: "off", list: "completionOptions", id: "input-area", class: "input-area", spellCheck: false, value: this.input, onInput: (event) => this.promptChange(event), onKeyDown: (event) => this.handleKeyboard(event) }),
                 h("data-list", { data: this.completionOptions, name: "completionOptions" }),
                 h("span", { class: "clear", onTouchStart: (e) => this.clear(e), onMouseDown: (e) => this.clear(e) },
                     h("span", null, "\u2715"))),

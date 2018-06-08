@@ -10,7 +10,7 @@ export class ObjectGui {
 	@State() datatogo: Array<any> = [];
 	@State() chunks: Array<any> = [];
 	@Prop() name: string;
-	chunkSize: number = 50;
+	chunkSize: number = 10;
 	dataToGoTimeout: any;
 	elements: {
 		datalist: HTMLDataListElement

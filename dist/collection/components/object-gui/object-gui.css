@@ -28,10 +28,6 @@ object-gui {
     background-color: darkgrey; }
   object-gui .no-select {
     user-select: none; }
-  object-gui pre {
-    margin: 0;
-    display: inline-block;
-    font-family: Consolas, monospace; }
   object-gui > div {
     white-space: nowrap; }
   object-gui .highlight {

@@ -287,7 +287,7 @@ export class ObjectGui {
 					func: isFunction
 				}}>
 				{isObj ? (<span class="type">{this.getType()}</span>) : (
-					<span class={type}>{type === "string" && !isFunction ? (<pre>{'"' + val + '"'}</pre>) : val + ""}</span>)}
+					<span class={type}>{type === "string" && !isFunction ? '"' + val + '"' : val + ""}</span>)}
 					{isObj ? " " : ""}
 					{isFunction ? this.value.name : ""}
 					{isObj ? openingBraket : ""}

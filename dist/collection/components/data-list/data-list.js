@@ -3,7 +3,7 @@ export class ObjectGui {
         this.data = [];
         this.datatogo = [];
         this.chunks = [];
-        this.chunkSize = 50;
+        this.chunkSize = 10;
         this.firstChunk = true;
     }
     watchHandler(newValue, oldValue) {

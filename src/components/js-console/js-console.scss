@@ -71,8 +71,11 @@
 		}
 	}
 
-
-
+	pre {
+		margin: 0;
+		display: inline-block;
+		font-family: Consolas, monospace;
+	}
 
 	.entries {
 		overflow: hidden;

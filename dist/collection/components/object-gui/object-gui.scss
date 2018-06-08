@@ -53,12 +53,6 @@ object-gui {
 		user-select: none;
 	}
 
-	pre {
-		margin: 0;
-		display: inline-block;
-		font-family: Consolas, monospace;
-	}
-
 	&> div {
 		white-space: nowrap;
 	}

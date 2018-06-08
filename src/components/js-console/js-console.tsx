@@ -154,7 +154,7 @@ export class JsConsole {
 			history: r.querySelector(".history")
 		};
 		this.handleOnPatternChange(this.pattern);
-		this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 300);
+		this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 200);
 	}
 
 	handleConsoleEvent(args) {
@@ -365,22 +365,27 @@ export class JsConsole {
 			});
 		}
 
-		res.sort();
+		if (res.length < 50) {
 
-		let hist = this.inputs.slice(0, -1);
-		if (hist) {
-			hist = hist.filter((p) => {
-				return p.indexOf(this.input) == 0;
-			});
-			res = uniq(hist.concat(res));
+			res.sort();
+
+			let hist = this.inputs.slice(0, -1);
+			if (hist) {
+				hist = hist.filter((p) => {
+					return p.indexOf(this.input) == 0;
+				});
+				res = uniq(hist.concat(res));
+			}
+
+			let index = res.indexOf(this.input);
+			if (index != -1) {
+				res.splice(index, 1);
+			}
+
+			this.completionOptions = res;
+		} else {
+			this.completionOptions = [];
 		}
-
-		let index = res.indexOf(this.input);
-		if (index != -1) {
-			res.splice(index, 1);
-		}
-
-		this.completionOptions = res;
 	}
 
 	handleHistoryClick(i) {
@@ -488,7 +493,6 @@ export class JsConsole {
 						id="input-area"
 						class="input-area"
 						spellCheck={false}
-						size={250}
 						value={this.input}
 						onInput={(event) => this.promptChange(event)}
 						onKeyDown={(event) => this.handleKeyboard(event)}>
