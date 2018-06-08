@@ -32,9 +32,11 @@ export declare class JsConsole {
     completionOptions: Array<any>;
     proxy(method: any, name: any, handler: any): any;
     constructor();
-    watchHandler(newValue: string, oldValue: string): void;
+    displayChangeHandler(_: any): void;
+    patternChangeHanlder(newValue: string, oldValue: string): void;
     handleOnPatternChange(newValue: string): void;
     updateOrientation(): boolean;
+    findElements(): void;
     componentDidLoad(): void;
     handleConsoleEvent(method: any, args: any): void;
     getInputEntry(): string;

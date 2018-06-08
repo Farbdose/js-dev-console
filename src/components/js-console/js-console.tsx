@@ -99,8 +99,15 @@ export class JsConsole {
 		this.updateOrientation();
 	}
 
+	@Watch('display')
+	displayChangeHandler(_) {
+		setTimeout(() => {
+			this.findElements();
+		}, 100);
+	}
+
 	@Watch('pattern')
-	watchHandler(newValue: string, oldValue: string) {
+	patternChangeHanlder(newValue: string, oldValue: string) {
 		if (newValue != oldValue) {
 			this.handleOnPatternChange(newValue);
 		}
@@ -148,13 +155,17 @@ export class JsConsole {
 		return oldValue != newValue;
 	}
 
-	componentDidLoad() {
+	findElements() {
 		let r = this.el.shadowRoot;
 		this.elements = {
 			textArea: r.querySelector(".input-area"),
 			scrollMarker: r.querySelector(".scroll-marker"),
 			history: r.querySelector(".history")
 		};
+	}
+
+	componentDidLoad() {
+		this.findElements();
 		this.handleOnPatternChange(this.pattern);
 		this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 200);
 	}

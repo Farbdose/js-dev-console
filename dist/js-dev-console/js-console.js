@@ -476,7 +476,12 @@ class JsConsole {
             }
         });
     }
-    watchHandler(newValue, oldValue) {
+    displayChangeHandler(_) {
+        setTimeout(() => {
+            this.findElements();
+        }, 100);
+    }
+    patternChangeHanlder(newValue, oldValue) {
         if (newValue != oldValue) {
             this.handleOnPatternChange(newValue);
         }
@@ -521,13 +526,16 @@ class JsConsole {
         this.horizontal = newValue;
         return oldValue != newValue;
     }
-    componentDidLoad() {
+    findElements() {
         let r = this.el.shadowRoot;
         this.elements = {
             textArea: r.querySelector(".input-area"),
             scrollMarker: r.querySelector(".scroll-marker"),
             history: r.querySelector(".history")
         };
+    }
+    componentDidLoad() {
+        this.findElements();
         this.handleOnPatternChange(this.pattern);
         this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 200);
     }
@@ -820,7 +828,8 @@ class JsConsole {
         "display": {
             "type": Boolean,
             "attr": "display",
-            "mutable": true
+            "mutable": true,
+            "watchCallbacks": ["displayChangeHandler"]
         },
         "el": {
             "elementRef": true
@@ -853,7 +862,7 @@ class JsConsole {
         "pattern": {
             "type": String,
             "attr": "pattern",
-            "watchCallbacks": ["watchHandler"]
+            "watchCallbacks": ["patternChangeHanlder"]
         },
         "rows": {
             "state": true

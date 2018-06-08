@@ -368,7 +368,13 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
                 }
             });
         };
-        JsConsole.prototype.watchHandler = function (newValue, oldValue) {
+        JsConsole.prototype.displayChangeHandler = function (_) {
+            var _this = this;
+            setTimeout(function () {
+                _this.findElements();
+            }, 100);
+        };
+        JsConsole.prototype.patternChangeHanlder = function (newValue, oldValue) {
             if (newValue != oldValue) {
                 this.handleOnPatternChange(newValue);
             }
@@ -414,14 +420,17 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             this.horizontal = newValue;
             return oldValue != newValue;
         };
-        JsConsole.prototype.componentDidLoad = function () {
-            var _this = this;
+        JsConsole.prototype.findElements = function () {
             var r = this.el.shadowRoot;
             this.elements = {
                 textArea: r.querySelector(".input-area"),
                 scrollMarker: r.querySelector(".scroll-marker"),
                 history: r.querySelector(".history")
             };
+        };
+        JsConsole.prototype.componentDidLoad = function () {
+            var _this = this;
+            this.findElements();
             this.handleOnPatternChange(this.pattern);
             this.updateAutoCompleteOptions = __chunk_1.debounce(function () { return _this.updateAutoCompleteOptionsUtil(); }, 200);
         };
@@ -701,7 +710,8 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
                     "display": {
                         "type": Boolean,
                         "attr": "display",
-                        "mutable": true
+                        "mutable": true,
+                        "watchCallbacks": ["displayChangeHandler"]
                     },
                     "el": {
                         "elementRef": true
@@ -734,7 +744,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
                     "pattern": {
                         "type": String,
                         "attr": "pattern",
-                        "watchCallbacks": ["watchHandler"]
+                        "watchCallbacks": ["patternChangeHanlder"]
                     },
                     "rows": {
                         "state": true

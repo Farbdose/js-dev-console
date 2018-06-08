@@ -52,7 +52,10 @@
           "name": "display",
           "type": "Boolean",
           "mutable": true,
-          "attr": "display"
+          "attr": "display",
+          "watch": [
+            "displayChangeHandler"
+          ]
         },
         {
           "name": "first",
@@ -75,7 +78,7 @@
           "type": "String",
           "attr": "pattern",
           "watch": [
-            "watchHandler"
+            "patternChangeHanlder"
           ]
         }
       ],
