@@ -337,9 +337,9 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             this.log = function () {
             };
             this.horizontal = true;
-            //this.log = console.log;
+            //this.log = console.info.bind(this);
             ["log", "debug", "warn", "error"].forEach(function (key) {
-                console[key] = _this.proxy(console, console[key], key, function (args) { return _this.handleConsoleEvent(args); });
+                console[key] = _this.proxy(console[key], key, function (method, args) { return _this.handleConsoleEvent(method, args); });
             });
             if (!window["debug"]) {
                 var Debug = /** @class */ (function () {
@@ -350,21 +350,23 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
                 window["debug"] = new Debug();
             }
             window["debug"].JsConsole = this;
-            window.onerror = this.proxy(window, window.onerror, "onerror", function (args) {
-                args.method = "error";
+            if (!window.onerror) {
+                window.onerror = function () { };
+            }
+            window.onerror = this.proxy(window.onerror, "onerror", function (method, args) {
+                method = "error";
                 _this.log(args);
-                _this.handleConsoleEvent(args);
+                _this.handleConsoleEvent(method, args);
             });
             this.updateOrientation();
         }
-        JsConsole.prototype.proxy = function (context, method, name, handler) {
-            return function () {
-                var args = Array.prototype.slice.apply(arguments);
-                handler({ method: name, arguments: args });
-                if (method) {
-                    method.apply(context, args);
+        JsConsole.prototype.proxy = function (method, name, handler) {
+            return new Proxy(method, {
+                apply: function (func, thisArg, argumentsList) {
+                    handler(name, argumentsList);
+                    return Reflect.apply(func, thisArg, argumentsList);
                 }
-            };
+            });
         };
         JsConsole.prototype.watchHandler = function (newValue, oldValue) {
             if (newValue != oldValue) {
@@ -423,23 +425,23 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             this.handleOnPatternChange(this.pattern);
             this.updateAutoCompleteOptions = __chunk_1.debounce(function () { return _this.updateAutoCompleteOptionsUtil(); }, 200);
         };
-        JsConsole.prototype.handleConsoleEvent = function (args) {
-            this.log("Log: ", args.arguments[4]);
-            switch (args.method) {
+        JsConsole.prototype.handleConsoleEvent = function (method, args) {
+            this.log("Log: ", method, args);
+            switch (method) {
                 case "log":
                 case "info":
                 case "warn":
                 case "debug": {
                     this.outputs = this.outputs.concat([{
-                            value: args.arguments,
+                            value: args,
                             command: "",
-                            type: args.method
+                            type: method
                         }]);
                     break;
                 }
                 case "error": {
                     this.outputs = this.outputs.concat([{
-                            value: args.arguments[0] + ((args.arguments[4] ? args.arguments[4].stack : "") || "").replace(/^[^\n]+/, ""),
+                            value: args[0] + ((args[4] ? args[4].stack : "") || "").replace(/^[^\n]+/, ""),
                             command: "",
                             type: "error"
                         }]);
@@ -663,7 +665,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
                     return (h("div", { class: "scroll-mask" }, h("div", { class: "scroll" }, h("pre", { class: "output log" }, entry.value.map(function (e) {
                         switch (typeof e) {
                             case "string":
-                                return (h("span", null, e));
+                                return (h("span", { class: "string" }, "\"", e, "\""));
                             case "number":
                                 return (h("span", { class: "number" }, e));
                             case "boolean":
@@ -749,7 +751,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             configurable: true
         });
         Object.defineProperty(JsConsole, "style", {
-            get: function () { return ":host(.fixed) {\n  width: unset;\n  left: -1px;\n  right: -1px;\n  bottom: -2px;\n  max-height: 30vh;\n  position: fixed; }\n  :host(.fixed) form, :host(.fixed) .entries {\n    min-height: 100%; }\n\n:host {\n  width: calc(100% - 2px);\n  max-height: calc(100% - 2px);\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible;\n  border: 1px solid lightgrey;\n  overflow-y: auto;\n  background-color: rgba(255, 255, 255, 0.85);\n  opacity: 0.8; }\n  \@media (max-width: 700px) {\n    :host {\n      font-size: 100%; } }\n  :host .url {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  :host .scroll-mask {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  :host .scroll {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      :host .scroll {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      :host .scroll::-webkit-scrollbar {\n        display: none; } }\n  :host pre {\n    margin: 0;\n    display: inline-block;\n    font-family: Consolas, monospace; }\n  :host .entries {\n    overflow: hidden; }\n  :host .output {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    :host .output.log > span:not(:last-child), :host .output.info > span:not(:last-child), :host .output.warn > span:not(:last-child), :host .output.debug > span:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    :host .output.info {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    :host .output.warn {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    :host .output.debug {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    :host .output.error {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n  :host .bottom-wrapper {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    width: 100%; }\n    :host .bottom-wrapper .clear {\n      font-size: 14px;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      \@media (min-width: 700px) {\n        :host .bottom-wrapper .clear {\n          -webkit-transform: scale(0.9);\n          transform: scale(0.9); } }\n      :host .bottom-wrapper .clear span {\n        width: 16px;\n        height: 16px;\n        display: table-cell;\n        text-align: center;\n        vertical-align: middle;\n        -webkit-transform: translateY(-1px);\n        transform: translateY(-1px); }\n    :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {\n      font-size: 16px;\n      line-height: 16px;\n      height: 16px; }\n    :host .bottom-wrapper .history {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      :host .bottom-wrapper .history .popup {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        :host .bottom-wrapper .history .popup.open {\n          opacity: 1; }\n        :host .bottom-wrapper .history .popup span {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          :host .bottom-wrapper .history .popup span:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    :host .bottom-wrapper .input-area {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      :host .bottom-wrapper .input-area:focus {\n        outline: none !important; }\n    :host .bottom-wrapper .prompt {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 19.2px;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      \@media (max-width: 700px) {\n        :host .bottom-wrapper .prompt {\n          font-size: 23.04px; } }\n      :host .bottom-wrapper .prompt.open {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }"; },
+            get: function () { return ":host(.fixed) {\n  width: unset;\n  left: -1px;\n  right: -1px;\n  bottom: -2px;\n  max-height: 30vh;\n  position: fixed; }\n  :host(.fixed) form, :host(.fixed) .entries {\n    min-height: 100%; }\n\n:host {\n  width: calc(100% - 2px);\n  max-height: calc(100% - 2px);\n  position: absolute;\n  font-family: Consolas, monospace;\n  font-size: 11px;\n  visibility: visible;\n  border: 1px solid lightgrey;\n  overflow-y: auto;\n  background-color: rgba(255, 255, 255, 0.85);\n  opacity: 0.8; }\n  \@media (max-width: 700px) {\n    :host {\n      font-size: 100%; } }\n  :host .url {\n    position: absolute;\n    right: 0;\n    top: 0; }\n  :host .scroll-mask {\n    overflow: hidden;\n    width: 100%;\n    height: 100%; }\n  :host .scroll {\n    width: 100%;\n    overflow-x: scroll;\n    overflow-y: hidden;\n    -webkit-box-sizing: content-box;\n    box-sizing: content-box;\n    height: 100%;\n    margin-bottom: 0; }\n    \@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-ms-accelerator: true) {\n      :host .scroll {\n        -ms-overflow-style: -ms-autohiding-scrollbar; } }\n    \@supports (-moz-appearance: none) {\n      :host .scroll {\n        height: calc(100% + 12px);\n        margin-bottom: -12px; } }\n    \@supports (-webkit-appearance: none) {\n      :host .scroll::-webkit-scrollbar {\n        display: none; } }\n  :host pre {\n    margin: 0;\n    display: inline-block;\n    font-family: Consolas, monospace; }\n  :host .entries {\n    overflow: hidden; }\n  :host .output {\n    width: -webkit-fit-content;\n    width: -moz-fit-content;\n    width: fit-content;\n    border-bottom: 1px solid lightgrey;\n    min-width: calc(100% - 10px);\n    padding: 5px; }\n    :host .output.log > span:not(:last-child), :host .output.info > span:not(:last-child), :host .output.warn > span:not(:last-child), :host .output.debug > span:not(:last-child) {\n      float: left;\n      margin-right: 5px; }\n    :host .output.info {\n      color: blue;\n      background-color: rgba(0, 0, 255, 0.08); }\n    :host .output.warn {\n      color: orange;\n      background-color: rgba(255, 165, 0, 0.08); }\n    :host .output.debug {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    :host .output.error {\n      color: red;\n      background-color: rgba(255, 0, 0, 0.08); }\n    :host .output .string {\n      color: #d73a49; }\n    :host .output .number, :host .output .boolean {\n      color: blue; }\n  :host .bottom-wrapper {\n    bottom: 0;\n    position: -webkit-sticky;\n    position: sticky;\n    background-color: white;\n    margin-top: -1px;\n    border-top: 1px solid lightgrey;\n    width: 100%; }\n    :host .bottom-wrapper .clear {\n      font-size: 14px;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      display: inline-block;\n      background-color: lightgrey;\n      border-radius: 10px;\n      width: 16px;\n      height: 16px;\n      position: relative;\n      margin-top: 2px; }\n      \@media (min-width: 700px) {\n        :host .bottom-wrapper .clear {\n          -webkit-transform: scale(0.9);\n          transform: scale(0.9); } }\n      :host .bottom-wrapper .clear span {\n        width: 16px;\n        height: 16px;\n        display: table-cell;\n        text-align: center;\n        vertical-align: middle;\n        -webkit-transform: translateY(-1px);\n        transform: translateY(-1px); }\n    :host .bottom-wrapper .history, :host .bottom-wrapper .input-area {\n      font-size: 16px;\n      line-height: 16px;\n      height: 16px; }\n    :host .bottom-wrapper .history {\n      padding-left: 22px;\n      height: 0;\n      overflow: visible;\n      position: absolute; }\n      :host .bottom-wrapper .history .popup {\n        -webkit-transition: opacity 0.15s;\n        transition: opacity 0.15s;\n        position: absolute;\n        bottom: 0;\n        background-color: rgba(255, 255, 255, 0.9);\n        border-radius: 4px;\n        border: 1px solid rgba(84, 83, 76, 0.3);\n        font-size: 88%;\n        display: inline-block;\n        min-width: 120px;\n        min-height: 15px;\n        max-height: 50px;\n        overflow-y: auto;\n        opacity: 0; }\n        :host .bottom-wrapper .history .popup.open {\n          opacity: 1; }\n        :host .bottom-wrapper .history .popup span {\n          white-space: nowrap;\n          display: block;\n          position: relative;\n          bottom: 0;\n          -webkit-transition: background-color 0.3s, color 0.3s;\n          transition: background-color 0.3s, color 0.3s;\n          background-color: rgba(0, 0, 255, 0); }\n          :host .bottom-wrapper .history .popup span:active {\n            -webkit-transition: background-color 0s, color 0s;\n            transition: background-color 0s, color 0s;\n            background-color: rgba(0, 0, 255, 0.5);\n            color: white; }\n    :host .bottom-wrapper .input-area {\n      border: none;\n      width: calc(100% - 24px - 20px);\n      resize: none;\n      padding: 2px;\n      -webkit-transform: translateY(-2px);\n      transform: translateY(-2px); }\n      :host .bottom-wrapper .input-area:focus {\n        outline: none !important; }\n    :host .bottom-wrapper .prompt {\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none;\n      cursor: pointer;\n      -webkit-transition: all 0.15s;\n      transition: all 0.15s;\n      -webkit-transform: scaleX(0.5);\n      transform: scaleX(0.5);\n      float: left;\n      color: blue;\n      font-size: 19.2px;\n      margin: -1px 4px -1px 4px;\n      font-family: Consolas, monospace;\n      font-weight: 800; }\n      \@media (max-width: 700px) {\n        :host .bottom-wrapper .prompt {\n          font-size: 23.04px; } }\n      :host .bottom-wrapper .prompt.open {\n        -webkit-transform: scaleY(0.5) rotateZ(-90deg);\n        transform: scaleY(0.5) rotateZ(-90deg); }"; },
             enumerable: true,
             configurable: true
         });

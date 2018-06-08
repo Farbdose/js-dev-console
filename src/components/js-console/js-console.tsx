@@ -63,20 +63,19 @@ export class JsConsole {
 	horizontal: boolean = true;
 	@State() completionOptions: Array<any>;
 
-	proxy(context, method, name, handler) {
-		return function () {
-			let args = Array.prototype.slice.apply(arguments);
-			handler({method: name, arguments: args});
-			if (method) {
-				method.apply(context, args);
+	proxy(method, name, handler) {
+		return new Proxy(method, {
+			apply: (func, thisArg, argumentsList) => {
+				handler(name, argumentsList);
+				return Reflect.apply(func, thisArg, argumentsList);
 			}
-		};
+		});
 	}
 
 	constructor() {
-		//this.log = console.log;
+		//this.log = console.info.bind(this);
 		["log", "debug", "warn", "error"].forEach((key) => {
-			console[key] = this.proxy(console, console[key], key, (args) => this.handleConsoleEvent(args));
+			console[key] = this.proxy(console[key], key, (method, args) => this.handleConsoleEvent(method, args));
 		});
 
 		if (!window["debug"]) {
@@ -88,10 +87,13 @@ export class JsConsole {
 
 		window["debug"].JsConsole = this;
 
-		window.onerror = this.proxy(window, window.onerror, "onerror", (args) => {
-			args.method = "error";
+		if(!window.onerror) {
+			window.onerror = () => {};
+		}
+		window.onerror = this.proxy(window.onerror, "onerror", (method, args) => {
+			method = "error";
 			this.log(args);
-			this.handleConsoleEvent(args);
+			this.handleConsoleEvent(method, args);
 		});
 
 		this.updateOrientation();
@@ -157,23 +159,23 @@ export class JsConsole {
 		this.updateAutoCompleteOptions = debounce(() => this.updateAutoCompleteOptionsUtil(), 200);
 	}
 
-	handleConsoleEvent(args) {
-		this.log("Log: ", args.arguments[4]);
-		switch (args.method) {
+	handleConsoleEvent(method, args) {
+		this.log("Log: ", method, args);
+		switch (method) {
 			case "log":
 			case "info":
 			case "warn":
 			case "debug": {
 				this.outputs = [...this.outputs, {
-					value: args.arguments,
+					value: args,
 					command: "",
-					type: args.method
+					type: method
 				}];
 				break;
 			}
 			case "error": {
 				this.outputs = [...this.outputs, {
-					value: args.arguments[0] + ((args.arguments[4] ? args.arguments[4].stack : "") || "").replace(/^[^\n]+/, ""),
+					value: args[0] + ((args[4] ? args[4].stack : "") || "").replace(/^[^\n]+/, ""),
 					command: "",
 					type: "error"
 				}];
@@ -452,7 +454,7 @@ export class JsConsole {
 											entry.value.map((e) => {
 												switch (typeof e) {
 													case "string":
-														return (<span>{e}</span>);
+														return (<span class="string">"{e}"</span>);
 													case "number":
 														return (<span class="number">{e}</span>);
 													case "boolean":

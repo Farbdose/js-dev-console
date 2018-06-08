@@ -30,13 +30,13 @@ export declare class JsConsole {
     log: Function;
     horizontal: boolean;
     completionOptions: Array<any>;
-    proxy(context: any, method: any, name: any, handler: any): () => void;
+    proxy(method: any, name: any, handler: any): any;
     constructor();
     watchHandler(newValue: string, oldValue: string): void;
     handleOnPatternChange(newValue: string): void;
     updateOrientation(): boolean;
     componentDidLoad(): void;
-    handleConsoleEvent(args: any): void;
+    handleConsoleEvent(method: any, args: any): void;
     getInputEntry(): string;
     setInputEntry(val: any): void;
     getOutputEntry(): {

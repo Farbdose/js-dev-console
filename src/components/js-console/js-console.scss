@@ -113,6 +113,14 @@
 			color: red;
 			background-color: rgba(255, 0, 0, 0.08);
 		}
+
+		.string {
+			color: #d73a49;
+		}
+
+		.number, .boolean {
+			color: blue;
+		}
 	}
 
 	.bottom-wrapper {
