@@ -30,7 +30,7 @@ export declare class JsConsole {
     log: Function;
     horizontal: boolean;
     completionOptions: Array<any>;
-    proxy(method: any, name: any, handler: any): any;
+    proxy(obj: any, key: any, handler: any): () => any;
     constructor();
     displayChangeHandler(_: any): void;
     patternChangeHanlder(newValue: string, oldValue: string): void;

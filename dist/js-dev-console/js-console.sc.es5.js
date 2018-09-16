@@ -339,7 +339,7 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             this.horizontal = true;
             //this.log = console.info.bind(this);
             ["log", "debug", "warn", "error"].forEach(function (key) {
-                console[key] = _this.proxy(console[key], key, function (method, args) { return _this.handleConsoleEvent(method, args); });
+                console[key] = _this.proxy(console, key, function (method, args) { return _this.handleConsoleEvent(method, args); });
             });
             if (!window["debug"]) {
                 var Debug = /** @class */ (function () {
@@ -353,20 +353,19 @@ JsDevConsole.loadBundle('js-console', ['exports', './chunk-2ed43275.js'], functi
             if (!window.onerror) {
                 window.onerror = function () { };
             }
-            window.onerror = this.proxy(window.onerror, "onerror", function (method, args) {
+            window.onerror = this.proxy(window, "onerror", function (method, args) {
                 method = "error";
                 _this.log(args);
                 _this.handleConsoleEvent(method, args);
             });
             this.updateOrientation();
         }
-        JsConsole.prototype.proxy = function (method, name, handler) {
-            return new Proxy(method, {
-                apply: function (func, thisArg, argumentsList) {
-                    handler(name, argumentsList);
-                    return Reflect.apply(func, thisArg, argumentsList);
-                }
-            });
+        JsConsole.prototype.proxy = function (obj, key, handler) {
+            var method = obj[key];
+            return function () {
+                handler(key, arguments.slice());
+                return method.apply(obj, arguments.slice());
+            };
         };
         JsConsole.prototype.displayChangeHandler = function (_) {
             var _this = this;

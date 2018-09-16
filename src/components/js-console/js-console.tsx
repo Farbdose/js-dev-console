@@ -63,19 +63,19 @@ export class JsConsole {
 	horizontal: boolean = true;
 	@State() completionOptions: Array<any>;
 
-	proxy(method, name, handler) {
-		return new Proxy(method, {
-			apply: (func, thisArg, argumentsList) => {
-				handler(name, argumentsList);
-				return Reflect.apply(func, thisArg, argumentsList);
-			}
-		});
+	proxy(obj, key, handler) {
+		let method = obj[key];
+
+		return function () {
+			handler(key, [...arguments]);
+			return method.apply(obj, [...arguments]);
+		};
 	}
 
 	constructor() {
 		//this.log = console.info.bind(this);
 		["log", "debug", "warn", "error"].forEach((key) => {
-			console[key] = this.proxy(console[key], key, (method, args) => this.handleConsoleEvent(method, args));
+			console[key] = this.proxy(console, key, (method, args) => this.handleConsoleEvent(method, args));
 		});
 
 		if (!window["debug"]) {
@@ -87,10 +87,10 @@ export class JsConsole {
 
 		window["debug"].JsConsole = this;
 
-		if(!window.onerror) {
+		if (!window.onerror) {
 			window.onerror = () => {};
 		}
-		window.onerror = this.proxy(window.onerror, "onerror", (method, args) => {
+		window.onerror = this.proxy(window, "onerror", (method, args) => {
 			method = "error";
 			this.log(args);
 			this.handleConsoleEvent(method, args);
