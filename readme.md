@@ -1,4 +1,4 @@
-### js-dev-console javascript console written in javascript - created with Stencil.js
+## js-dev-console javascript console written in javascript - created with Stencil.js
 
 js-dev-console was written to enable mobile app debugging - on the device itself - in production mode.
 
